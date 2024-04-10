@@ -7,11 +7,11 @@ const HomePage = () => {
     <div>
         <TopBar title="Home" />
 
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center mb-8">
             <div className="mt-20 text-lg font-bold">Total Balance</div>
             {/* TODO: Replace with real data */}
-            <div className="text-green-500 mt-1">Owed $230</div>  
-            <div className="font-bold text-lg self-start mt-4 ml-4">Recent Transactions</div>
+            <div className="text-red-700 mt-1 text-3xl font-bold">Owed $230</div>  
+            <div className="font-bold text-lg self-start mt-4 ml-4 mb-2">Recent Transactions</div>
             <div className="flex flex-row self-start justify-around mt-2">
                 {/* TODO: Replace with real data */}
                 <div className="rounded overflow-hidden shadow-lg w-1/4">
@@ -45,7 +45,13 @@ const HomePage = () => {
 
             <BottomNavBar />
         </div>
+
+        <div className="flex flex-col items-center mb-8">
+            <div className="font-bold text-lg self-start mt-4 ml-4 mb-2">Group Transcations</div>
+        </div>
+
     </div>
+    
   );
 };
 
