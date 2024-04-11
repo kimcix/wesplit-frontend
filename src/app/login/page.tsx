@@ -27,8 +27,9 @@ const LoginPage = ({ username, password, setUsername, setPassword }: LoginPagePr
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
+      <h1 className="text-4xl font-bold mb-4">Log In</h1>
       <div className="mb-8">
-        <Image src="/logo.png" alt="Logo" width={100} height={100} />
+        {/* insert image gere */}
       </div>
       <form className="w-64" onSubmit={handleSubmit}>
         <div className="mb-4">
@@ -55,7 +56,7 @@ const LoginPage = ({ username, password, setUsername, setPassword }: LoginPagePr
             required
           />
         </div>
-        <button type="submit" className="w-full px-4 py-2 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-blue-600">Login</button>
+        <button type="submit" className="w-full px-4 py-2 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Login</button>
       </form>
     </div>
   );

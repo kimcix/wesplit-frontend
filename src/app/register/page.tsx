@@ -44,7 +44,7 @@ export default function Register() {
           <label>Email</label>
           <input className="w-full px-3 py-2 border rounded-md" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
-        <button className="w-full px-4 py-2 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-black-400 mt-4" type="submit">Register</button>
+        <button className="w-full px-4 py-2 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600 mt-4" type="submit">Register</button>
       </form>
     </div>
   );
