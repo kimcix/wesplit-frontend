@@ -2,12 +2,14 @@
 
 'use client'
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,6 +24,7 @@ export default function Register() {
     const data = await response.json();
     if (response.ok) {
       setMessage('User registered successfully!');
+      router.push('/')
     } else {
       setMessage(data.error || 'An error occurred');
     }

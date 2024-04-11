@@ -29,7 +29,7 @@ export default function Login(){
       // Handle your token here, store it in state, or save it in localStorage/sessionStorage
       console.log('Access Token:', data.access_token);
       setMessage('User registered successfully!');
-      router.push('/');
+      router.push('/home');
     }else{
       const data = await response.json();
       setMessage(data.error || 'An error occurred');
