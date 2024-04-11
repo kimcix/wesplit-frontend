@@ -28,23 +28,23 @@ export default function Register() {
   };
 
   return (
-    <div>
-      <h1>Register</h1>
+    <div className="flex flex-col items-center justify-center h-screen">
+      <h1 className="text-4xl font-bold mb-4">Register</h1>
       {message && <p>{message}</p>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Username</label>
-          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+          <input className="w-full px-3 py-2 border rounded-md" type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
         </div>
         <div>
-          <label>Password</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <label htmlFor="password" className="block mb-1">Password</label>
+          <input className="w-full px-3 py-2 border rounded-md" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </div>
         <div>
           <label>Email</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input className="w-full px-3 py-2 border rounded-md" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
-        <button type="submit">Register</button>
+        <button className="w-full px-4 py-2 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-black-400 mt-4" type="submit">Register</button>
       </form>
     </div>
   );

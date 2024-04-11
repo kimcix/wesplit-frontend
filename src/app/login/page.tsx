@@ -55,7 +55,7 @@ const LoginPage = ({ username, password, setUsername, setPassword }: LoginPagePr
             required
           />
         </div>
-        <button type="submit" className="w-full px-4 py-2 bg-blue-500 text-white rounded-md transition duration-300 hover:bg-blue-600">Login</button>
+        <button type="submit" className="w-full px-4 py-2 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-blue-600">Login</button>
       </form>
     </div>
   );
