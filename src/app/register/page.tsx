@@ -11,7 +11,7 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch('http://localhost:5000/register', { // Adjust your backend port if necessary
+    const response = await fetch('http://127.0.0.1:5000/register', { // Adjust your backend port if necessary
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
