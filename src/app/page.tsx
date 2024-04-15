@@ -8,6 +8,7 @@ export default function Home() {
       <Link href="/register">Link to register page</Link>
       <Link href="/login">Link to login page</Link>
       <Link href="/home">Link to home page</Link>
+      <Link href="/profile">Profile</Link>
     </main>
   );
 }
