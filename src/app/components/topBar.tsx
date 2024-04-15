@@ -19,7 +19,6 @@ const TopBar: React.FC<TopBarProps> = ({ title }) => {
           <div className="w-1/4 flex justify-end items-center">
             <div className="flex items-center justify-center cursor-pointer">
               <FaUserCog className="h-7 w-7 text-xl"/>
-              
             </div>
           </div>
       
