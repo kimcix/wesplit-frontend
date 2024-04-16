@@ -31,6 +31,8 @@ export default function Login(){
       setMessage('User registered successfully!');
       if (typeof window !== 'undefined') {
         localStorage.setItem('token', data.access_token);
+        localStorage.setItem('username', data.username);
+        console.log("login ok")
       }
       router.push('/profile');
     }else{

@@ -1,7 +1,6 @@
 // pages/profile.tsx
 'use client'
 
-
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -17,7 +16,7 @@ export default function Profile() {
   const router = useRouter();
 
   const handleEmailEdit = () => {
-    setEditEmail(user.email); // Prepopulate the editEmail state with the current email
+    setEditEmail(user.email); 
     setEditingEmail(true);
   };
 
