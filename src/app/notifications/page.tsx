@@ -1,11 +1,11 @@
 'use client';
 import { ChangeEvent } from 'react';
 import React, {useState, useEffect} from 'react';
-import BottomNavBar from '../components/bottomNavigationBar'
-import TopBar from '../components/topBar'
+import BottomNavBar from '../components/bottomNavigationBar';
+import TopBar from '../components/topBar';
+import SocketClient from '../components/socket';
 
 const apiPrefix = 'http://127.0.0.1:5000';
-
 
 const HomePage = () => {
     // TODO: Replace the placeholder below with the real username
@@ -38,11 +38,17 @@ const HomePage = () => {
           }
         console.log(checkboxValue + " toggle value: " + isChecked);
 
+        // Manually update the local state to keep it consistent with DB state
         setUserNotificationPreference(prevSettings => ({...prevSettings, [checkboxValue]: isChecked}));
     };
 
     // Get the initial user notification preference 
     useEffect(() => {
+        SocketClient.connect();
+        SocketClient.on("new-notification-history", data => {
+            console.log("socket data: ", data);
+        });
+
         const apiRequestUrl = apiPrefix + '/notifications/settings?username=' + username;
         const fetchData = async () => {
             const response = await fetch(apiRequestUrl, {
@@ -67,6 +73,7 @@ const HomePage = () => {
         fetchData();
         // Any clean-up code can go here
         return () => {
+            SocketClient.close();
         };
       }, []);
     
