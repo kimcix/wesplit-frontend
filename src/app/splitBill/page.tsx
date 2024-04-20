@@ -19,14 +19,14 @@ const HomePage = () => {
     
     const [inputMethod, setInputMethod] = useState('total');
     const [totalAmount, setTotalAmount] = useState('');
-    const [items, setItems] = useState<{ name: string, unitPrice: number, amount: number }[]>([]);
+    const [items, setItems] = useState<{ name: string, unitPrice: number, amount: number }[]>([]); 
 
 
-    function handleOptionChange(event: ChangeEvent<HTMLSelectElement>) {
+    function handleSplitMethodChange(event: ChangeEvent<HTMLSelectElement>) {
         setInputMethod(event.target.value);
         // Reset the total amount and items when the input method changes
         setTotalAmount('');
-        setItems([]);
+        setItems([{ name: '', unitPrice: 0.0, amount: 0 }]);
     }
 
     function handleTotalAmountChange(event: ChangeEvent<HTMLInputElement>) {
@@ -41,7 +41,7 @@ const HomePage = () => {
 
     function handleUnitPriceChange(index: number, event: ChangeEvent<HTMLInputElement>) {
         const newItems = [...items];
-        newItems[index].unitPrice = event.target.value.trim() !== '' ? parseFloat(event.target.value) : 2.33;
+        newItems[index].unitPrice = event.target.value.trim() !== '' ? parseFloat(event.target.value) : 0;
         setItems(newItems);
     }
 
@@ -61,6 +61,16 @@ const HomePage = () => {
         setItems([...items, { name: '', unitPrice: 0.0, amount: 0 }]);
     }
 
+    function handleRemoveItem(index: number) {
+        if (items.length == 1) {
+            setItems([{ name: '', unitPrice: 0.0, amount: 0 }]);
+            return;
+        }
+        const newItems = [...items];
+        newItems.splice(index, 1);
+        setItems(newItems);
+    }    
+
   return (
     <div>
         <TopBar title="Split Bill" />
@@ -72,7 +82,7 @@ const HomePage = () => {
                     <span className="font-bold text-gray-700">Input Master Bill:</span>
                     <select 
                         id="input-method"
-                        onChange={handleOptionChange}>
+                        onChange={handleSplitMethodChange}>
                         <option value="total">Total Amount</option>
                         <option value="item">Item List</option>
                     </select>
@@ -86,54 +96,68 @@ const HomePage = () => {
                         className="mt-3 p-2 border border-gray-300 rounded-md w-full"
                     />
                 )}
-                {inputMethod === 'item' && (
+                {inputMethod === 'item' && (                   
                     <div>
-                        {items.map((item, index) => (
-                            <div key={index} className="mt-3 space-y-2">
-                                <input 
-                                    type="text" 
-                                    placeholder="Item name" 
-                                    value={item.name}
-                                    onChange={(e) => handleItemNameChange(index, e)}
-                                    className="p-2 border border-gray-300 rounded-md w-full"
-                                />
-                                <input 
-                                    type="text" 
-                                    placeholder="Unit price" 
-                                    // value={item.unitPrice}
-                                    onChange={(e) => handleUnitPriceChange(index, e)}
-                                    className="p-2 border border-gray-300 rounded-md w-full"
-                                />
-                                <input 
-                                    type="text" 
-                                    placeholder="Amount" 
-                                    // value={item.amount}
-                                    onChange={(e) => handleAmountChange(index, e)}
-                                    className="p-2 border border-gray-300 rounded-md w-full"
-                                />
-                            </div>
-                        ))}
-                        <button 
-                            onClick={handleAddItem} 
-                            className="mt-3 p-2 bg-blue-500 text-white rounded-md"
-                        >
-                            Add Item
-                        </button>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style={{width : '50%'}}>Name</th>
+                                    <th style={{width : '20%'}}>Unit Price</th>
+                                    <th style={{width : '20%'}}>Amount</th>
+                                    <th style={{width : '25%'}}></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {items.map((item, index) => (
+                                    <tr key={index}>
+                                        <td>
+                                            <input
+                                                style={{width : '100%'}}
+                                                type="text"
+                                                value={item.name}
+                                                onChange={(e) => handleItemNameChange(index, e)}
+                                            />
+                                        </td>
+                                        <td>
+                                            <input
+                                                style={{width : '100%'}}
+                                                type="number"
+                                                step="0.01"
+                                                value={item.unitPrice}
+                                                onChange={(e) => handleUnitPriceChange(index, e)}
+                                            />
+                                        </td>
+                                        <td>
+                                            <input
+                                                style={{width : '100%'}}
+                                                type="number"
+                                                value={item.amount}
+                                                onChange={(e) => handleAmountChange(index, e)}
+                                            />
+                                        </td>
+                                        <td>
+                                            <button onClick={() => handleRemoveItem(index)}>remove</button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>   
+                        <div style={{ textAlign: 'center' }}>
+                            <button onClick={handleAddItem}>Add Item</button>
+                        </div>                                            
                         <div className="mt-3 p-2 border border-gray-300 rounded-md w-full">
                             Total Amount: {items.reduce((acc, item) => acc + (item.unitPrice * item.amount), 0)}
                         </div>
                     </div>
                 )}
-            </div>            
-
-
+            </div>
 
             {/* <div className="mt-20 text-lg font-bold">Choose Split Method:</div> */}
             <label className="inline-flex items-center cursor-pointer flex flex-row justify-between w-full">
                 <span className="font-bold text-gray-700">Choose Split Method:</span>
                 <select 
                     id="split-method"
-                    onChange={handleOptionChange}>
+                    onChange={handleSplitMethodChange}>
                     <option value="equally">Equally</option>
                     <option value="percentage">By Percentage</option>
                     <option value="individual">Individual Items</option>
