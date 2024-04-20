@@ -4,6 +4,7 @@ import React, {useState, useEffect} from 'react';
 import BottomNavBar from '../components/bottomNavigationBar';
 import TopBar from '../components/topBar';
 import SocketClient from '../components/socket';
+import Popup from '../components/popupWindow';
 
 const apiPrefix = 'http://127.0.0.1:5000';
 
@@ -23,6 +24,7 @@ const HomePage = () => {
         smsNotificationsEnabled: false
       });
     const [notificationHistories, setNotificationHistories] = useState<NotificationHistory[]>([]);
+    const [notification, setNotification] = useState<{ title: string, body: string } | null>(null);
 
     // Handler function to set user's notification preference
     const handleNotificationToggleChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -85,18 +87,28 @@ const HomePage = () => {
                 throw new Error('Failed to retrieve user notification histories');
             }
             const data = await response.json();
+            // Sort notification histories in descending order (latest first)
+            data.sort((a: NotificationHistory, b: NotificationHistory) => {
+                const timeA = new Date(a.notificationTime);
+                const timeB = new Date(b.notificationTime);
+                return timeB.getTime() - timeA.getTime();
+            });
             setNotificationHistories(data)
             console.log('user notification histories: ', data);
         };
-
+        // Retrieve initial user data
         fetchUserNotificationPreferences();
         fetchUserNotificationHistories();
-
+        // Update the list of notification histories and display a popup window
         SocketClient.on("new-notification-history", data => {
-            fetchUserNotificationHistories()
-            // TODO: Display a notification pop-up window
+            fetchUserNotificationHistories();
+            // Display a notification pop-up window
+            console.log("socket data: ", data);
+            setNotification({title: data.notificationTitle, body: data.notificationBody});
+            setTimeout(() => {
+                setNotification(null);
+            }, 3000);
         });
-
         // Any clean-up code can go here
         return () => {
             SocketClient.close();
@@ -107,10 +119,10 @@ const HomePage = () => {
         <div>
             <TopBar title="Notifications" />
 
+            {notification && <Popup title={notification.title} body={notification.body} />}
+
             <div className="flex flex-col ml-4">
-
                 <div className="mt-20 text-lg font-bold">Recent Notifications</div>
-
                 {notificationHistories.length === 0 ? (
                     <p className="mt-4 mb-4 text-gray-700 font-bold">No Recent Notifications</p>
                 ):(
@@ -121,16 +133,14 @@ const HomePage = () => {
                                     <div className="min-w-0 flex-auto">
                                         <p className="font-semibold leading-6 text-gray-700">{history.notificationTitle}</p>
                                         <p className="mt-1 truncate text-sm leading-5 text-gray-500">{history.notificationBody}</p>
-                                        <p className="mt-1 truncate text-xs leading-5 text-gray-500">{ (new Date(history.notificationTime)).toLocaleString('en-US', {timeZone: 'America/Los_Angeles'})}</p>
+                                        <p className="mt-1 truncate text-xs leading-5 text-gray-500">{(new Date(history.notificationTime)).toLocaleString('en-US', {timeZone: 'America/Los_Angeles'})}</p>
                                     </div>
                                 </div>
                             </li>
                         ))}
                     </ul>
                 )}
-
                 <div className="mt-4 mb-4 text-lg font-bold">Notification Preferences</div>
-
                 <label className="inline-flex items-center cursor-pointer mb-4">
                     <input 
                         type="checkbox"
