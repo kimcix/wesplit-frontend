@@ -7,6 +7,13 @@ import SocketClient from '../components/socket';
 
 const apiPrefix = 'http://127.0.0.1:5000';
 
+interface NotificationHistory {
+    notificationBody: string;
+    notificationTime: string;
+    notificationTitle: string;
+    username: string;
+}
+
 const HomePage = () => {
     // TODO: Replace the placeholder below with the real username
     const username = 'unique';
@@ -15,8 +22,9 @@ const HomePage = () => {
         emailNotificationsEnabled: false,
         smsNotificationsEnabled: false
       });
+    const [notificationHistories, setNotificationHistories] = useState<NotificationHistory[]>([]);
 
-    // Set user's notification preference
+    // Handler function to set user's notification preference
     const handleNotificationToggleChange = async (event: ChangeEvent<HTMLInputElement>) => {
         event.preventDefault();
         const checkboxValue = event.target.value;
@@ -36,22 +44,18 @@ const HomePage = () => {
           if (!response.ok) {
             throw new Error('Failed to update user notification preferences');
           }
-        console.log(checkboxValue + " toggle value: " + isChecked);
 
         // Manually update the local state to keep it consistent with DB state
         setUserNotificationPreference(prevSettings => ({...prevSettings, [checkboxValue]: isChecked}));
     };
 
-    // Get the initial user notification preference 
     useEffect(() => {
+        // Connect to socket
         SocketClient.connect();
-        SocketClient.on("new-notification-history", data => {
-            console.log("socket data: ", data);
-        });
-
-        const apiRequestUrl = apiPrefix + '/notifications/settings?username=' + username;
-        const fetchData = async () => {
-            const response = await fetch(apiRequestUrl, {
+        // Fetch user notification preferences
+        const notificationPreferenceAPIRequestUrl = apiPrefix + '/notifications/settings?username=' + username;
+        const fetchUserNotificationPreferences = async () => {
+            const response = await fetch(notificationPreferenceAPIRequestUrl, {
                 method: 'GET',
                 headers: {
                   'Content-Type': 'application/json'
@@ -66,11 +70,33 @@ const HomePage = () => {
                 emailNotificationsEnabled: data.emailNotificationsEnabled,
                 smsNotificationsEnabled: data.smsNotificationsEnabled
             })
-            console.log('data: ', data);
-            console.log('userNotificationPreference: ', userNotificationPreference);
+            console.log('user notification preferences: ', data);
         };
-        // Call the fetchData function when the component mounts
-        fetchData();
+        // Fetch user notification histories
+        const notificationHistoryAPIRequestUrl = apiPrefix + '/notifications/histories?username=' + username;
+        const fetchUserNotificationHistories = async () => {
+            const response = await fetch(notificationHistoryAPIRequestUrl, {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+              });
+            if (!response.ok) {
+                throw new Error('Failed to retrieve user notification histories');
+            }
+            const data = await response.json();
+            setNotificationHistories(data)
+            console.log('user notification histories: ', data);
+        };
+
+        fetchUserNotificationPreferences();
+        fetchUserNotificationHistories();
+
+        SocketClient.on("new-notification-history", data => {
+            fetchUserNotificationHistories()
+            // TODO: Display a notification pop-up window
+        });
+
         // Any clean-up code can go here
         return () => {
             SocketClient.close();
@@ -85,53 +111,23 @@ const HomePage = () => {
 
                 <div className="mt-20 text-lg font-bold">Recent Notifications</div>
 
-                <ul role="list" className="divide-y divide-gray-300 max-h-[50vh] overflow-y-scroll">
-                    <li className="flex justify-between gap-x-6 py-3">
-                        <div className="flex min-w-0 gap-x-4">
-                            <div className="min-w-0 flex-auto">
-                                <p className="font-semibold leading-6 text-gray-700">Leslie Alexander</p>
-                                <p className="mt-1 truncate text-sm leading-5 text-gray-500">leslie.alexander@example.com</p>
-                                <p className="mt-1 truncate text-xs leading-5 text-gray-500">4/24/2024</p>
-                            </div>
-                        </div>
-                    </li>
-                    <li className="flex justify-between gap-x-6 py-3">
-                        <div className="flex min-w-0 gap-x-4">
-                            <div className="min-w-0 flex-auto">
-                                <p className="font-semibold leading-6 text-gray-700">Leslie Alexander</p>
-                                <p className="mt-1 truncate text-sm leading-5 text-gray-500">leslie.alexander@example.com</p>
-                                <p className="mt-1 truncate text-xs leading-5 text-gray-500">4/24/2024</p>
-                            </div>
-                        </div>
-                    </li>
-                    <li className="flex justify-between gap-x-6 py-3">
-                        <div className="flex min-w-0 gap-x-4">
-                            <div className="min-w-0 flex-auto">
-                                <p className="font-semibold leading-6 text-gray-700">Leslie Alexander</p>
-                                <p className="mt-1 truncate text-sm leading-5 text-gray-500">leslie.alexander@example.com</p>
-                                <p className="mt-1 truncate text-xs leading-5 text-gray-500">4/24/2024</p>
-                            </div>
-                        </div>
-                    </li>
-                    <li className="flex justify-between gap-x-6 py-3">
-                        <div className="flex min-w-0 gap-x-4">
-                            <div className="min-w-0 flex-auto">
-                                <p className="font-semibold leading-6 text-gray-700">Leslie Alexander</p>
-                                <p className="mt-1 truncate text-sm leading-5 text-gray-500">leslie.alexander@example.com</p>
-                                <p className="mt-1 truncate text-xs leading-5 text-gray-500">4/24/2024</p>
-                            </div>
-                        </div>
-                    </li>
-                    <li className="flex justify-between gap-x-6 py-3">
-                        <div className="flex min-w-0 gap-x-4">
-                            <div className="min-w-0 flex-auto">
-                                <p className="font-semibold leading-6 text-gray-700">Leslie Alexander</p>
-                                <p className="mt-1 truncate text-sm leading-5 text-gray-500">leslie.alexander@example.com</p>
-                                <p className="mt-1 truncate text-xs leading-5 text-gray-500">4/24/2024</p>
-                            </div>
-                        </div>
-                    </li>
-                </ul>
+                {notificationHistories.length === 0 ? (
+                    <p className="mt-4 mb-4 text-gray-700 font-bold">No Recent Notifications</p>
+                ):(
+                    <ul role="list" className="divide-y divide-gray-300 max-h-[50vh] overflow-y-scroll">
+                        {notificationHistories.map((history, index) => (
+                            <li key={index} className="flex justify-between gap-x-6 py-3">
+                                <div className="flex min-w-0 gap-x-4">
+                                    <div className="min-w-0 flex-auto">
+                                        <p className="font-semibold leading-6 text-gray-700">{history.notificationTitle}</p>
+                                        <p className="mt-1 truncate text-sm leading-5 text-gray-500">{history.notificationBody}</p>
+                                        <p className="mt-1 truncate text-xs leading-5 text-gray-500">{ (new Date(history.notificationTime)).toLocaleString('en-US', {timeZone: 'America/Los_Angeles'})}</p>
+                                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
 
                 <div className="mt-4 mb-4 text-lg font-bold">Notification Preferences</div>
 
