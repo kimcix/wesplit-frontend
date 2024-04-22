@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 
 import BottomNavBar from '../components/bottomNavigationBar'
 import TopBar from '../components/topBar'
+import { userManagementAPIPrefix } from '../components/apiPrefix';
+
 
 export default function Profile() {
   const [user, setUser] = useState({ username: '', email: '' });
@@ -27,7 +29,7 @@ export default function Profile() {
   const saveEmail = async () => {
     // Assuming you have a backend endpoint '/update-profile' to handle the profile update
     const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
-    const response = await fetch('http://127.0.0.1:5000/profile', {
+    const response = await fetch(userManagementAPIPrefix + '/profile', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -52,7 +54,7 @@ export default function Profile() {
     const fetchProfile = async () => {
       const token = localStorage.getItem('token'); // Retrieve the token from localStorage
       try {
-        const response = await fetch('http://127.0.0.1:5000/profile', {
+        const response = await fetch(userManagementAPIPrefix + '/profile', {
           headers: {
             'Authorization': `Bearer ${token}`
           }

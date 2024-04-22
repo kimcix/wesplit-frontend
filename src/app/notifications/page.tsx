@@ -1,12 +1,11 @@
 'use client';
 import { ChangeEvent } from 'react';
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import BottomNavBar from '../components/bottomNavigationBar';
 import TopBar from '../components/topBar';
 import SocketClient from '../components/socket';
 import Popup from '../components/popupWindow';
-
-const apiPrefix = 'http://127.0.0.1:5000';
+import { notificationAPIPrefix } from '../components/apiPrefix';
 
 interface NotificationHistory {
     notificationBody: string;
@@ -31,7 +30,7 @@ const HomePage = () => {
         event.preventDefault();
         const checkboxValue = event.target.value;
         const isChecked = event.target.checked;
-        const apiRequestUrl = apiPrefix + '/notifications/settings?username=' + username;
+        const apiRequestUrl = notificationAPIPrefix + '/notifications/settings?username=' + username;
         const requestBody = {
             'notificationPreference': checkboxValue,
             'isEnabled': isChecked,
@@ -55,7 +54,7 @@ const HomePage = () => {
         // Connect to socket
         SocketClient.connect();
         // Fetch user notification preferences
-        const notificationPreferenceAPIRequestUrl = apiPrefix + '/notifications/settings?username=' + username;
+        const notificationPreferenceAPIRequestUrl = notificationAPIPrefix + '/notifications/settings?username=' + username;
         const fetchUserNotificationPreferences = async () => {
             const response = await fetch(notificationPreferenceAPIRequestUrl, {
                 method: 'GET',
@@ -75,7 +74,7 @@ const HomePage = () => {
             console.log('user notification preferences: ', data);
         };
         // Fetch user notification histories
-        const notificationHistoryAPIRequestUrl = apiPrefix + '/notifications/histories?username=' + username;
+        const notificationHistoryAPIRequestUrl = notificationAPIPrefix + '/notifications/histories?username=' + username;
         const fetchUserNotificationHistories = async () => {
             const response = await fetch(notificationHistoryAPIRequestUrl, {
                 method: 'GET',
