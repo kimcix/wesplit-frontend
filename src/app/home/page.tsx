@@ -33,7 +33,7 @@ const HomePage = () => {
             <div className="flex flex-col items-center mb-8">
                 <div className="mt-20 text-lg font-bold">Total Balance</div>
                 {/* TODO: Replace with real data */}
-                <div className="text-red-700 mt-1 text-3xl font-bold">Owed $230</div>  
+                <div className="text-red-700 mt-2 text-3xl font-bold">Owed $230</div>  
                 <div className="font-bold text-lg self-start mt-4 ml-4 mb-2">Recent Transactions</div>
                 <div className="flex flex-row self-start justify-around mt-1 w-full">
                     {/* TODO: Replace with real data */}

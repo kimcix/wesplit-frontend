@@ -17,7 +17,7 @@ interface NotificationHistory {
 
 const HomePage = () => {
     // TODO: Replace the placeholder below with the real username
-    const username = 'unique';
+    const username = 'unique22';
     const [userNotificationPreference, setUserNotificationPreference] = useState({
         inAppNotificationsEnabled: false,
         emailNotificationsEnabled: false,
@@ -101,13 +101,15 @@ const HomePage = () => {
         fetchUserNotificationHistories();
         // Update the list of notification histories and display a popup window
         SocketClient.on("new-notification-history", data => {
-            fetchUserNotificationHistories();
-            // Display a notification pop-up window
-            console.log("socket data: ", data);
-            setNotification({title: data.notificationTitle, body: data.notificationBody});
-            setTimeout(() => {
-                setNotification(null);
-            }, 3000);
+            if (data.username === username) {
+                fetchUserNotificationHistories();
+                // Display a notification pop-up window
+                console.log("socket data: ", data);
+                setNotification({title: data.notificationTitle, body: data.notificationBody});
+                setTimeout(() => {
+                    setNotification(null);
+                }, 3000);
+            }
         });
         // Any clean-up code can go here
         return () => {
