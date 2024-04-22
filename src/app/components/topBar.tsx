@@ -1,6 +1,7 @@
 import { title } from 'process';
 import { FaUserCog } from "react-icons/fa";
 import React from 'react';
+import Link from 'next/link';
 
 interface TopBarProps {
     title: string;
@@ -17,9 +18,11 @@ const TopBar: React.FC<TopBarProps> = ({ title }) => {
             {title}
           </div>
           <div className="w-1/4 flex justify-end items-center">
-            <div className="flex items-center justify-center cursor-pointer">
-              <FaUserCog className="h-7 w-7 text-xl"/>
-            </div>
+            <Link href="/profile">
+              <div className="flex items-center justify-center cursor-pointer">
+                <FaUserCog className="h-7 w-7 text-xl"/>
+             </div>
+            </Link>
           </div>
       
             
