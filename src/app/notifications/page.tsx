@@ -1,6 +1,5 @@
 'use client';
-import { ChangeEvent } from 'react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 import BottomNavBar from '../components/bottomNavigationBar';
 import TopBar from '../components/topBar';
 import SocketClient from '../components/socket';
@@ -15,8 +14,11 @@ interface NotificationHistory {
 }
 
 const HomePage = () => {
-    // TODO: Replace the placeholder below with the real username
-    const username = 'unique22';
+    const username = localStorage.getItem('username');
+    console.log("username: ", username);
+    // if (!username) {
+        // TODO: Redirect to the login page
+    // }
     const [userNotificationPreference, setUserNotificationPreference] = useState({
         inAppNotificationsEnabled: false,
         emailNotificationsEnabled: false,
