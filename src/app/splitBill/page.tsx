@@ -2,28 +2,54 @@
 import React, { ChangeEvent, ChangeEventHandler, useState  } from 'react';
 import BottomNavBar from '../components/bottomNavigationBar'
 import TopBar from '../components/topBar'
+import { CgChevronDoubleLeft } from 'react-icons/cg';
 
+const my_name = 'Lifan';
+const my_id = 0;
 const contacts = {
-    individual: [
-        { id: 1, name: 'Alice' },
-        { id: 2, name: 'Bob' },
-        { id: 3, name: 'Charlie' }
-    ],
-    group: [
-        { id: 4, name: 'Group 1', members: [
-            { id: 5, name: 'Dave' },
-            { id: 6, name: 'Eve' }
-        ]},
-        { id: 7, name: 'Group 2', members: [
-            { id: 8, name: 'Frank' },
-            { id: 9, name: 'Grace' }
-        ]},
-        { id: 10, name: 'Group 3', members: [
-            { id: 11, name: 'Heidi' },
-            { id: 12, name: 'Ivan' }
-        ]}
-    ]
-};
+    pinned:{
+        individual: [
+            { id: 1, name: 'Alice' },
+            { id: 2, name: 'Bob' },
+            { id: 3, name: 'Charlie' }
+        ],
+        group: [
+            { id: 4, name: 'Group 1', members: [
+                { id: 5, name: 'Dave' },
+                { id: 6, name: 'Eve' }
+            ]},
+            { id: 7, name: 'Group 2', members: [
+                { id: 8, name: 'Frank' },
+                { id: 9, name: 'Grace' }
+            ]},
+            { id: 10, name: 'Group 3', members: [
+                { id: 11, name: 'Heidi' },
+                { id: 12, name: 'Ivan' }
+            ]}
+        ]
+    },
+    others:{    
+        individual: [
+            { id: 1, name: 'Alice' },
+            { id: 2, name: 'Bob' },
+            { id: 3, name: 'Charlie' }
+        ],
+        group: [
+            { id: 4, name: 'Group 1', members: [
+                { id: 5, name: 'Dave' },
+                { id: 6, name: 'Eve' }
+            ]},
+            { id: 7, name: 'Group 2', members: [
+                { id: 8, name: 'Frank' },
+                { id: 9, name: 'Grace' }
+            ]},
+            { id: 10, name: 'Group 3', members: [
+                { id: 11, name: 'Heidi' },
+                { id: 12, name: 'Ivan' }
+            ]}
+        ]
+    } 
+} ;
 
 const HomePage = () => {
     
@@ -32,30 +58,28 @@ const HomePage = () => {
     const [totalAmount, setTotalAmount] = useState(0);
     const [items, setItems] = useState<{ name: string, unitPrice: number, amount: number }[]>([]); 
 
-    const [selectedUsers, setSelectedUsers] = useState<{ id: number, value: number }[]>([]);
-    // const [selectedUsers, setSelectedUsers] = useState<{ id: number, value: number }[]>([]);
+    const [selectedUsers, setSelectedUsers] = useState<{ id: number, value: number }[]>([{id: my_id, value: 0}]);
 
-    function handleUserSelect(userId: number) {
+    const addUser = (userId: number) => {
+        setSelectedUsers(prevUsers => {
+            if (!prevUsers.find(user => user.id === userId)) {
+                return [...prevUsers, { id: userId, value: 0 }];
+            } else {
+                return prevUsers;
+            }
+        });
+    };
 
-    }
+    const removeUser = (userId: number) => {
+        setSelectedUsers(selectedUsers.filter(user => user.id !== userId));
+    };
 
-    function handleUserSelectByValue(userId: number, value: number) {
-        if (value > 0) {
-            setSelectedUsers(prevUsers => {
-                if (prevUsers.find(user => user.id === userId)) {
-                    return prevUsers.map(user =>
-                        user.id === userId ? { id: userId, value: value } : user
-                    );
-                } else {
-                    return [...prevUsers, { id: userId, value: value }];
-                }
-            });
-        } else {
-            setSelectedUsers(prevUsers =>
-                prevUsers.filter(user => user.id !== userId)
-            );
+    const addGroup = (type: string, groupId: number) => {
+        const group = contacts[type as keyof typeof contacts].group.find(group => group.id === groupId);
+        if (group) {
+            group.members.forEach(member => addUser(member.id));
         }
-    }    
+    };
 
     function handleInputMethodChange(event: ChangeEvent<HTMLSelectElement>) {
         setInputMethod(event.target.value);
@@ -67,8 +91,9 @@ const HomePage = () => {
     function handleSplitMethodChange(event: ChangeEvent<HTMLSelectElement>) {
         setSplitMethod(event.target.value);
         console.log(event.target.value)
-        setSelectedUsers([]);
-        console.log(selectedUsers);
+        resetParticipantsValue();
+        // setSelectedUsers([]);
+        // console.log(selectedUsers);
     }
 
     function handleTotalAmountChange(event: ChangeEvent<HTMLInputElement>) {
@@ -77,16 +102,27 @@ const HomePage = () => {
         console.log(event.target.value)
     }
 
+    function calcTotalFromList() {
+        setTotalAmount(items.reduce((acc, item) => {
+            if (item.name.trim() !== '') {
+                return acc + (item.unitPrice * item.amount);
+            }
+            return acc;
+        }, 0));
+    }
+
     function handleItemNameChange(index: number, event: ChangeEvent<HTMLInputElement>) {
         const newItems = [...items];
         newItems[index].name = event.target.value;
         setItems(newItems);
+        calcTotalFromList();
     }
 
     function handleUnitPriceChange(index: number, event: ChangeEvent<HTMLInputElement>) {
         const newItems = [...items];
         newItems[index].unitPrice = event.target.value.trim() !== '' ? parseFloat(event.target.value) : 0;
         setItems(newItems);
+        calcTotalFromList();
     }
 
     function handleAmountChange(index: number, event: ChangeEvent<HTMLInputElement>) {
@@ -99,6 +135,7 @@ const HomePage = () => {
         }        
         newItems[index].amount = parsedValue;
         setItems(newItems);
+        calcTotalFromList();
     }
 
     function handleAddItem() {
@@ -114,6 +151,25 @@ const HomePage = () => {
         newItems.splice(index, 1);
         setItems(newItems);
     }    
+
+    function resetParticipantsValue() {
+        selectedUsers.forEach(usr => {usr.value = 0});
+    }
+
+    function handlePercentageChange(userId: number, value: number) {
+        console.log("percentage changed")
+        setSelectedUsers(prevUsers => {
+            if (prevUsers.find(user => user.id === userId)) {
+                return prevUsers.map(user =>
+                    user.id === userId ? { id: userId, value: value } : user
+                );
+            } 
+            else {
+                return prevUsers;
+            }
+        });
+        console.log(selectedUsers)
+    }
 
   return (
     <div>
@@ -144,7 +200,7 @@ const HomePage = () => {
                         />                        
                     </div>
                 )}
-                {inputMethod === 'item' && (                   
+                {inputMethod === 'item' && (
                     <div className='mt-2'>
                         <div className='border border-gray-300 rounded-md w-full'>
                             <div className='h-[20vh] overflow-y-scroll'>
@@ -190,10 +246,16 @@ const HomePage = () => {
                                     </tbody>
                                 </table>                            
                             </div>                            
-                        </div>                        
+                        </div>
+                        <div>Note: Item with empty field will be ingored.</div>                     
                         <div className='mt-2 flex flex-row justify-between items-center'>
                             <div className="border border-gray-300 rounded-md w-60">
-                                Calculated Total: {items.reduce((acc, item) => acc + (item.unitPrice * item.amount), 0)}
+                                Calculated Total: {items.reduce((acc, item) => {
+                                    if (item.name.trim() !== '') {
+                                        return acc + (item.unitPrice * item.amount);
+                                    }
+                                    return acc;
+                                }, 0)}                                
                             </div>                             
                             <button 
                                 className="border border-gray-300 rounded-md"
@@ -217,82 +279,72 @@ const HomePage = () => {
             </label>            
 
             <div className="mt-2 text-lg font-bold">Select participants from your contacts:</div>
-            <div className="max-h-[20vh] overflow-y-scroll border border-gray-300 rounded-md ">
-                <table className="w-full table-auto">
+            <div className="h-[20vh] overflow-y-scroll border border-gray-300 rounded-md ">
+                <table>                   
                     <tbody>
-                        {contacts.individual.map(user => (
+                        {selectedUsers.map(user => (
                             <tr key={user.id}>
-                                <td>{user.name}</td>
-                                    {splitMethod === 'amount' && (
-                                        <td>
+                                <td style={{width : '30%'}}>{user.id === my_id ? 'You' : user.id}</td>
+                                <td style={{width : '70%'}}>
+                                    {splitMethod === "equal" && 
+                                                <div>Amount: {totalAmount > 0 ? (totalAmount / selectedUsers.length).toFixed(2): 'NA'}</div>
+                                    }
+                                    {splitMethod === "percentage" && 
+                                        // <td style={{width : '70%'}}>
                                             <input
-                                                style={{width : '100%'}}
+                                                style={{width : '80%'}}
                                                 type="number"
                                                 step="0.01"
-                                                min="0"
-                                                value={selectedUsers.find(u => u.id === user.id)?.value || 0}
-                                                onChange={e => handleUserSelectByValue(user.id, parseInt(e.target.value))}
-                                            />
-                                        </td>                                              
-                                    )}
-                                                                
-                                {/* <td>Individual</td> */}
-                                <td>
-                                    {/* <input
-                                        type="checkbox"
-                                        checked={selectedUsers.includes(user.id)}
-                                        onChange={() => handleUserSelect(user.id)}
-                                    /> */}
-                                </td>
+                                                min={0}
+                                                max={100}
+                                                placeholder='Precentage'
+                                                value={selectedUsers.find(usr => usr.id === user.id)?.value || ''}
+                                                onChange={e => handlePercentageChange(user.id, parseFloat(e.target.value))}
+                                            />                                            
+                                        // {/* </td> */}
+                                    }
+                                </td>                                
+                                <td>{user.id !== my_id && <button onClick={() => removeUser(user.id)}>X</button>}</td>
                             </tr>
-                        ))}
-                        {contacts.group.map(group => (
-                            <React.Fragment key={group.id}>
-                                <tr>
-                                    <td>{group.name}</td>
-                                    {/* <td>Group</td> */}
-                                    <td>
-                                        {/* <input
-                                            type="checkbox"
-                                            checked={group.members.every(member => selectedUsers.includes(member.id))}
-                                            onChange={() => handleUserSelect(group.id)}
-                                        /> */}
-                                    </td>
-                                </tr>
-                                {group.members.map(member => {
-                                    return (
-                                        <tr key={member.id}>
-                                            <td>--{member.name}</td>
-                                            {splitMethod === 'equal' && (
-                                                <td>
-                                                    {/* <input
-                                                        type="checkbox"
-                                                        checked={selectedUsers.includes(member.id)}
-                                                        onChange={() => handleUserSelect(member.id)}
-                                                    /> */}
-                                                </td>                                                
-                                            )}
-                                            {splitMethod === 'amount' && (
-                                                <td>
-                                                    <input
-                                                        style={{width : '100%'}}
-                                                        type="number"
-                                                        step="0.01"
-                                                        min="0"
-                                                        
-                                                        onChange={e => handleUserSelectByValue(member.id, parseInt(e.target.value))}
-                                                        value={selectedUsers.find(u => u.id === member.id)?.value || 0}
-                                                    />
-                                                </td>                                              
-                                            )}                                            
-
-                                        </tr>
-                                    );
-                                })}
-                            </React.Fragment>
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            <div className="mt-2 max-h-[20vh] overflow-y-scroll border border-gray-300 rounded-md ">
+                {Object.keys(contacts).map(category => (
+                    <div key={category}>
+                        <h2>{category}</h2>
+                        {contacts[category as keyof typeof contacts].group.map(group => (
+                            <table key={group.id}>
+                                <tbody>
+                                    <tr>
+                                        <td style={{width : '100%'}}>{group.name}</td>
+                                        <td><button onClick={() => addGroup(category, group.id)}>Add</button></td>
+                                    </tr>
+                                    {group.members.map(member => (
+                                        <tr key={member.id}>
+                                            <td>---{member.name}</td>
+                                            <td><button onClick={() => addUser(member.id)}>Add</button></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ))}
+                        {contacts[category as keyof typeof contacts].individual.length > 0 && (
+                            <table>
+                                <tbody>
+                                    {contacts[category as keyof typeof contacts].individual.map(individual => (
+                                        <tr key={individual.id}>
+                                            <td style={{width : '100%'}}>{individual.name}</td>
+                                            <td><button onClick={() => addUser(individual.id)}>Add</button></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                ))}
             </div>
 
         </div>
