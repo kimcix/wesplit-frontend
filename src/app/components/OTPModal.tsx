@@ -1,43 +1,58 @@
-// components/OTPModal.tsx
-import { useState } from 'react';
+import React, { useState } from 'react';
+import '../modal.css';
 
-const OTPModal = ({ isOpen, onClose, onVerify }) => {
-  const [otp, setOtp] = useState('');
+const OTPInput = ({ length, onComplete }) => {
+  const [otp, setOtp] = useState(new Array(length).fill(""));
 
-  const handleOTPChange = (e) => {
-    setOtp(e.target.value);
+  const handleChange = (element, index) => {
+    if (isNaN(element.value)) return false; // Prevent non-numerical input
+    const newOtp = [...otp];
+    newOtp[index] = element.value;
+    setOtp(newOtp);
+
+    // Auto-focus to next input on entry
+    if (element.nextSibling) {
+      element.nextSibling.focus();
+    }
+
+    // If filled all inputs, call onComplete
+    if (newOtp.every(num => num !== "")) {
+      onComplete(newOtp.join(""));
+    }
   };
 
-  const handleVerifyClick = () => {
+  return (
+    <div className="otp-inputs">
+      {otp.map((data, index) => {
+        return (
+          <input
+            key={index}
+            type="text"
+            value={data}
+            onChange={e => handleChange(e.target, index)}
+            onFocus={e => e.target.select()}
+            className="otp-box"
+          />
+        );
+      })}
+    </div>
+  );
+};
+
+const OTPModal = ({ onVerify, onCancel }) => {
+  const handleComplete = (otp) => {
+    console.log("Entered OTP is:", otp);
     onVerify(otp);
   };
 
-  if (!isOpen) {
-    return null;
-  }
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center">
-      <div className="bg-white p-4 rounded">
-        <h2 className="text-lg mb-2">Enter your OTP</h2>
-        <input
-          type="number"
-          value={otp}
-          onChange={handleOTPChange}
-          className="border p-2 rounded w-full mb-4"
-        />
-        <button
-          onClick={handleVerifyClick}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-        >
-          Verify
-        </button>
-        <button
-          onClick={onClose}
-          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700 ml-2"
-        >
-          Cancel
-        </button>
+    <div className="otp-modal-overlay">
+      <div className="otp-modal-content">
+        <h2>OTP Input</h2>
+        <p>Enter your one-time password</p>
+        <OTPInput length={6} onComplete={handleComplete} />
+        <button onClick={onVerify}>Verify</button>
+        <button onClick={onCancel}>Cancel</button>
       </div>
     </div>
   );
