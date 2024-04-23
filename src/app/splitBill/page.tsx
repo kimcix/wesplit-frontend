@@ -40,6 +40,7 @@ const contacts = {
 const HomePage = () => {
     
     const [inputMethod, setInputMethod] = useState('total');
+    const [splitMethod, setSplitMethod] = useState('equal');
     const [totalAmount, setTotalAmount] = useState('');
     const [items, setItems] = useState<{ name: string, unitPrice: number, amount: number }[]>([]); 
 
@@ -66,11 +67,18 @@ const HomePage = () => {
         }
     }
 
-    function handleSplitMethodChange(event: ChangeEvent<HTMLSelectElement>) {
+    function handleInputMethodChange(event: ChangeEvent<HTMLSelectElement>) {
         setInputMethod(event.target.value);
         // Reset the total amount and items when the input method changes
         setTotalAmount('');
         setItems([{ name: '', unitPrice: 0.0, amount: 0 }]);
+    }
+
+    function handleSplitMethodChange(event: ChangeEvent<HTMLSelectElement>) {
+        setSplitMethod(event.target.value);
+        // // Reset the total amount and items when the input method changes
+        // setTotalAmount('');
+        // setItems([{ name: '', unitPrice: 0.0, amount: 0 }]);
     }
 
     function handleTotalAmountChange(event: ChangeEvent<HTMLInputElement>) {
@@ -126,7 +134,7 @@ const HomePage = () => {
                     <span className="font-bold text-gray-700">Input Master Bill:</span>
                     <select 
                         id="input-method"
-                        onChange={handleSplitMethodChange}>
+                        onChange={handleInputMethodChange}>
                         <option value="total">Total Amount</option>
                         <option value="item">Item List</option>
                     </select>
@@ -208,30 +216,22 @@ const HomePage = () => {
                 )}
             </div>
 
-            {/* <div className="mt-20 text-lg font-bold">Choose Split Method:</div> */}
             <label className="mt-2 inline-flex items-center cursor-pointer flex flex-row justify-between w-full">
                 <span className="font-bold text-gray-700">Choose Split Method:</span>
                 <select 
                     id="split-method"
-                    // onChange={handleSplitMethodChange}
+                    onChange={handleSplitMethodChange}
                     >
-                    <option value="equally">Equally</option>
+                    <option value="equal">Equally</option>
                     <option value="percentage">Specify Percentage</option>
                     <option value="amount">Specify Amount</option>
-                    <option value="individual">Specify Items</option>
+                    <option value="items">Specify Items</option>
                 </select>
             </label>            
 
             <div className="mt-2 text-lg font-bold">Select participants from your contacts:</div>
             <div className="max-h-[20vh] overflow-y-scroll border border-gray-300 rounded-md ">
                 <table className="w-full table-auto">
-                    {/* <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>Select</th>
-                        </tr>
-                    </thead> */}
                     <tbody>
                         {contacts.individual.map(user => (
                             <tr key={user.id}>
@@ -271,7 +271,7 @@ const HomePage = () => {
                                                     onChange={() => handleUserSelect(member.id)}
                                                     disabled
                                                 />
-                                        </td>
+                                            </td>
                                         </tr>
                                     );
                                 })}
