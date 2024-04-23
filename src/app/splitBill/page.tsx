@@ -56,9 +56,19 @@ const HomePage = () => {
     const [inputMethod, setInputMethod] = useState('total');
     const [splitMethod, setSplitMethod] = useState('equal');
     const [totalAmount, setTotalAmount] = useState(0);
+    const [showContacts, setShowContacts] = useState(true);
+
     const [items, setItems] = useState<{ name: string, unitPrice: number, amount: number }[]>([]); 
 
     const [selectedUsers, setSelectedUsers] = useState<{ id: number, value: number }[]>([{id: my_id, value: 0}]);
+
+    function switchShowContacts() {
+        if (showContacts) {
+            setShowContacts(false);
+        } else {
+            setShowContacts(true);
+        }
+    }
 
     const addUser = (userId: number) => {
         setSelectedUsers(prevUsers => {
@@ -83,17 +93,15 @@ const HomePage = () => {
 
     function handleInputMethodChange(event: ChangeEvent<HTMLSelectElement>) {
         setInputMethod(event.target.value);
-        // Reset the total amount and items when the input method changes
         setTotalAmount(0);
         setItems([{ name: '', unitPrice: 0.0, amount: 0 }]);
+        resetParticipantsValue();
     }
 
     function handleSplitMethodChange(event: ChangeEvent<HTMLSelectElement>) {
         setSplitMethod(event.target.value);
         console.log(event.target.value)
         resetParticipantsValue();
-        // setSelectedUsers([]);
-        // console.log(selectedUsers);
     }
 
     function handleTotalAmountChange(event: ChangeEvent<HTMLInputElement>) {
@@ -156,12 +164,13 @@ const HomePage = () => {
         selectedUsers.forEach(usr => {usr.value = 0});
     }
 
-    function handlePercentageChange(userId: number, value: number) {
+    function handlePercentageChange(userId: number, event: ChangeEvent<HTMLInputElement>) {
         console.log("percentage changed")
         setSelectedUsers(prevUsers => {
             if (prevUsers.find(user => user.id === userId)) {
+
                 return prevUsers.map(user =>
-                    user.id === userId ? { id: userId, value: value } : user
+                    user.id === userId ? { id: userId, value: event.target.value.trim() !== '' ? parseInt(event.target.value, 10) : 0 } : user
                 );
             } 
             else {
@@ -278,7 +287,12 @@ const HomePage = () => {
                 </select>
             </label>            
 
-            <div className="mt-2 text-lg font-bold">Select participants from your contacts:</div>
+            <div className='mt-2 flex flex-row justify-between items-center'>
+                <div className="text-lg font-bold">Select participants:</div>
+                <button 
+                                className="border border-gray-300 rounded-md"
+                                onClick={switchShowContacts}>{showContacts ? 'Hide Contacts' : 'Show Contacts'}</button>                 
+            </div>
             <div className="h-[20vh] overflow-y-scroll border border-gray-300 rounded-md ">
                 <table>                   
                     <tbody>
@@ -287,21 +301,19 @@ const HomePage = () => {
                                 <td style={{width : '30%'}}>{user.id === my_id ? 'You' : user.id}</td>
                                 <td style={{width : '70%'}}>
                                     {splitMethod === "equal" && 
-                                                <div>Amount: {totalAmount > 0 ? (totalAmount / selectedUsers.length).toFixed(2): 'NA'}</div>
+                                        <div>Amount: {totalAmount > 0 ? (totalAmount / selectedUsers.length).toFixed(2): 'NA'}</div>
                                     }
                                     {splitMethod === "percentage" && 
-                                        // <td style={{width : '70%'}}>
-                                            <input
-                                                style={{width : '80%'}}
-                                                type="number"
-                                                step="0.01"
-                                                min={0}
-                                                max={100}
-                                                placeholder='Precentage'
-                                                value={selectedUsers.find(usr => usr.id === user.id)?.value || ''}
-                                                onChange={e => handlePercentageChange(user.id, parseFloat(e.target.value))}
-                                            />                                            
-                                        // {/* </td> */}
+                                        <input
+                                            style={{width : '80%'}}
+                                            type="number"
+                                            step="1"
+                                            min={0}
+                                            max={100}
+                                            placeholder='Precentage'
+                                            value={selectedUsers.find(usr => usr.id === user.id)?.value || ''}
+                                            onChange={e => handlePercentageChange(user.id, e)}
+                                        />                                            
                                     }
                                 </td>                                
                                 <td>{user.id !== my_id && <button onClick={() => removeUser(user.id)}>X</button>}</td>
@@ -311,7 +323,7 @@ const HomePage = () => {
                 </table>
             </div>
 
-            <div className="mt-2 max-h-[20vh] overflow-y-scroll border border-gray-300 rounded-md ">
+            {showContacts && <div className="mt-2 max-h-[20vh] overflow-y-scroll border border-gray-300 rounded-md ">
                 {Object.keys(contacts).map(category => (
                     <div key={category}>
                         <h2>{category}</h2>
@@ -345,7 +357,7 @@ const HomePage = () => {
                         )}
                     </div>
                 ))}
-            </div>
+            </div>}
 
         </div>
 
