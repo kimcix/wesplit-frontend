@@ -3,18 +3,6 @@ import React, { ChangeEvent, ChangeEventHandler, useState  } from 'react';
 import BottomNavBar from '../components/bottomNavigationBar'
 import TopBar from '../components/topBar'
 
-
-// const [selectedOption, setSelectedOption] = useState<string>("percentage");
-
-// const handleOptionChange = (event: ChangeEvent<HTMLSelectElement>) => {
-//     const selectedValue = event.target.value;
-//     console.log("Selected value:", selectedValue);
-// };
-
-// const HandleSMSNotificationToggleChange = (event: ChangeEvent<HTMLInputElement>) => {
-//     console.log("SMS notification toggle value: " + event.target.checked);
-// };
-
 const contacts = {
     individual: [
         { id: 1, name: 'Alice' },
@@ -41,48 +29,52 @@ const HomePage = () => {
     
     const [inputMethod, setInputMethod] = useState('total');
     const [splitMethod, setSplitMethod] = useState('equal');
-    const [totalAmount, setTotalAmount] = useState('');
+    const [totalAmount, setTotalAmount] = useState(0);
     const [items, setItems] = useState<{ name: string, unitPrice: number, amount: number }[]>([]); 
 
-    const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+    const [selectedUsers, setSelectedUsers] = useState<{ id: number, value: number }[]>([]);
+    // const [selectedUsers, setSelectedUsers] = useState<{ id: number, value: number }[]>([]);
 
     function handleUserSelect(userId: number) {
-        const user = contacts.individual.find(user => user.id === userId);
-        if (user) {
+
+    }
+
+    function handleUserSelectByValue(userId: number, value: number) {
+        if (value > 0) {
             setSelectedUsers(prevUsers => {
-                if (prevUsers.includes(userId)) {
-                    return prevUsers.filter(id => id !== userId);
+                if (prevUsers.find(user => user.id === userId)) {
+                    return prevUsers.map(user =>
+                        user.id === userId ? { id: userId, value: value } : user
+                    );
                 } else {
-                    return [...prevUsers, userId];
+                    return [...prevUsers, { id: userId, value: value }];
                 }
             });
         } else {
-            const group = contacts.group.find(group => group.id === userId);
-            if (group) {
-                setSelectedUsers(prevUsers => {
-                    const groupMembers = group.members.map(member => member.id).filter(memberId => !prevUsers.includes(memberId));
-                    return [...prevUsers, ...groupMembers];
-                });
-            }
+            setSelectedUsers(prevUsers =>
+                prevUsers.filter(user => user.id !== userId)
+            );
         }
-    }
+    }    
 
     function handleInputMethodChange(event: ChangeEvent<HTMLSelectElement>) {
         setInputMethod(event.target.value);
         // Reset the total amount and items when the input method changes
-        setTotalAmount('');
+        setTotalAmount(0);
         setItems([{ name: '', unitPrice: 0.0, amount: 0 }]);
     }
 
     function handleSplitMethodChange(event: ChangeEvent<HTMLSelectElement>) {
         setSplitMethod(event.target.value);
-        // // Reset the total amount and items when the input method changes
-        // setTotalAmount('');
-        // setItems([{ name: '', unitPrice: 0.0, amount: 0 }]);
+        console.log(event.target.value)
+        setSelectedUsers([]);
+        console.log(selectedUsers);
     }
 
     function handleTotalAmountChange(event: ChangeEvent<HTMLInputElement>) {
-        setTotalAmount(event.target.value);
+        const parsedValue = event.target.value.trim() !== '' ? parseFloat(event.target.value) : 0;
+        setTotalAmount(parsedValue);
+        console.log(event.target.value)
     }
 
     function handleItemNameChange(index: number, event: ChangeEvent<HTMLInputElement>) {
@@ -142,27 +134,19 @@ const HomePage = () => {
                 {inputMethod === 'total' && (
                     <div className='w-full'>
                         <input 
-                            type="text" 
+                            type="number" 
                             placeholder="Enter total amount" 
-                            value={totalAmount}
+                            min={0}
+                            step="0.01"
+                            value={totalAmount > 0 ? totalAmount.toString() : ''}
                             onChange={handleTotalAmountChange}
                             className="mt-3 p-2 border border-gray-300 rounded-md"
                         />                        
                     </div>
                 )}
                 {inputMethod === 'item' && (                   
-                    <div>
+                    <div className='mt-2'>
                         <div className='border border-gray-300 rounded-md w-full'>
-                            <table className='border-b border-gray-300 rounded-md w-full'>
-                                <thead>
-                                    <tr>
-                                        <th style={{width : '50%'}}>Name</th>
-                                        <th style={{width : '25%'}}>Unit Price</th>
-                                        <th style={{width : '20%'}}>Amount</th>
-                                        <th style={{width : '25%'}}></th>
-                                    </tr>
-                                </thead>
-                            </table>
                             <div className='h-[20vh] overflow-y-scroll'>
                                 <table>
                                     <tbody>                    
@@ -172,6 +156,7 @@ const HomePage = () => {
                                                     <input
                                                         style={{width : '100%'}}
                                                         type="text"
+                                                        placeholder='Item Name'
                                                         value={item.name}
                                                         onChange={(e) => handleItemNameChange(index, e)}
                                                     />
@@ -181,7 +166,8 @@ const HomePage = () => {
                                                         style={{width : '100%'}}
                                                         type="number"
                                                         step="0.01"
-                                                        value={item.unitPrice}
+                                                        placeholder='Unit Price'
+                                                        value={item.unitPrice > 0 ? item.unitPrice.toString() : ''}
                                                         onChange={(e) => handleUnitPriceChange(index, e)}
                                                     />
                                                 </td>
@@ -189,7 +175,8 @@ const HomePage = () => {
                                                     <input
                                                         style={{width : '100%'}}
                                                         type="number"
-                                                        value={item.amount}
+                                                        placeholder='Amount'
+                                                        value={item.amount > 0 ? item.amount.toString() : ''}
                                                         onChange={(e) => handleAmountChange(index, e)}
                                                     />
                                                 </td>
@@ -204,14 +191,14 @@ const HomePage = () => {
                                 </table>                            
                             </div>                            
                         </div>                        
-                        <div style={{ textAlign: 'center' }}>
+                        <div className='mt-2 flex flex-row justify-between items-center'>
+                            <div className="border border-gray-300 rounded-md w-60">
+                                Calculated Total: {items.reduce((acc, item) => acc + (item.unitPrice * item.amount), 0)}
+                            </div>                             
                             <button 
-                                className="mt-2 px-1 border border-gray-300 rounded-md"
-                                onClick={handleAddItem}>Add Item</button>
+                                className="border border-gray-300 rounded-md"
+                                onClick={handleAddItem}>Add Item</button>                           
                         </div>                                            
-                        <div className="mt-3 p-2 mb-2 border border-gray-300 rounded-md w-full">
-                            Calculated Total Amount: {items.reduce((acc, item) => acc + (item.unitPrice * item.amount), 0)}
-                        </div>
                     </div>
                 )}
             </div>
@@ -236,13 +223,26 @@ const HomePage = () => {
                         {contacts.individual.map(user => (
                             <tr key={user.id}>
                                 <td>{user.name}</td>
+                                    {splitMethod === 'amount' && (
+                                        <td>
+                                            <input
+                                                style={{width : '100%'}}
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                value={selectedUsers.find(u => u.id === user.id)?.value || 0}
+                                                onChange={e => handleUserSelectByValue(user.id, parseInt(e.target.value))}
+                                            />
+                                        </td>                                              
+                                    )}
+                                                                
                                 {/* <td>Individual</td> */}
                                 <td>
-                                    <input
+                                    {/* <input
                                         type="checkbox"
                                         checked={selectedUsers.includes(user.id)}
                                         onChange={() => handleUserSelect(user.id)}
-                                    />
+                                    /> */}
                                 </td>
                             </tr>
                         ))}
@@ -252,26 +252,40 @@ const HomePage = () => {
                                     <td>{group.name}</td>
                                     {/* <td>Group</td> */}
                                     <td>
-                                        <input
+                                        {/* <input
                                             type="checkbox"
                                             checked={group.members.every(member => selectedUsers.includes(member.id))}
                                             onChange={() => handleUserSelect(group.id)}
-                                        />
+                                        /> */}
                                     </td>
                                 </tr>
                                 {group.members.map(member => {
                                     return (
                                         <tr key={member.id}>
                                             <td>--{member.name}</td>
-                                            {/* <td>Individual</td> */}
-                                            <td>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedUsers.includes(member.id)}
-                                                    onChange={() => handleUserSelect(member.id)}
-                                                    disabled
-                                                />
-                                            </td>
+                                            {splitMethod === 'equal' && (
+                                                <td>
+                                                    {/* <input
+                                                        type="checkbox"
+                                                        checked={selectedUsers.includes(member.id)}
+                                                        onChange={() => handleUserSelect(member.id)}
+                                                    /> */}
+                                                </td>                                                
+                                            )}
+                                            {splitMethod === 'amount' && (
+                                                <td>
+                                                    <input
+                                                        style={{width : '100%'}}
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        
+                                                        onChange={e => handleUserSelectByValue(member.id, parseInt(e.target.value))}
+                                                        value={selectedUsers.find(u => u.id === member.id)?.value || 0}
+                                                    />
+                                                </td>                                              
+                                            )}                                            
+
                                         </tr>
                                     );
                                 })}
