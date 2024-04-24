@@ -163,7 +163,9 @@ export default function Profile() {
       setUser((prevUser) => ({ ...prevUser, email: editEmail }));
       setEditingEmail(false);
     } else {
-      console.error('Failed to update profile');
+      const errorData = await response.json();
+      console.error('Failed to update profile:', errorData);
+      setErrorMessage(errorData.error);
     }
   };
 
@@ -182,7 +184,9 @@ export default function Profile() {
       setUser((prevUser) => ({ ...prevUser, phone_number: editPhone }));
       setIsEditingPhone(false);
     } else {
-      console.error('Failed to update profile');
+      const errorData = await response.json();
+      console.error('Failed to update profile:', errorData);
+      setErrorMessage(errorData.error);
     }
   };
 
@@ -253,7 +257,17 @@ export default function Profile() {
         )}
       </div>
       </div>
+
+      <div>
+          {errorMessage && (
+            <div className="mb-4 text-red-500">{errorMessage}</div>
+          )}
+      </div>
+    
       <div className="flex justify-center space-x-4">
+        
+        {/* Display error message if it exists */}
+       
         <button onClick={() => router.push('/')} className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Back to Home</button>
       </div>
       {showOTPModal && (
