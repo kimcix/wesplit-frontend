@@ -10,7 +10,7 @@ import TopBar from '../components/topBar';
 
 
 export default function Profile() {
-  const [user, setUser] = useState({ username: '', email: '', phone_number: '', tfa_enabled: false });
+  const [user, setUser] = useState({ username: '', email: '', phone_number: '', tfa_enabled: false, average_payback_time: '', total_owed: '' });
   const [isLoading, setLoading] = useState(true);
   const [isEditingEmail, setEditingEmail] = useState(false);
   const [editEmail, setEditEmail] = useState('');
@@ -121,7 +121,28 @@ export default function Profile() {
             email: userData.email,
             phone_number: userData.phone,
             tfa_enabled: userData['2fa_enabled'],
+            average_payback_time: '',
+            total_owed: '',
           });
+
+          // Now, fetch the average payback time
+          const analysisResponse = await fetch(`http://localhost:5003/user_analysis?username=${userData.username}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          if (analysisResponse.ok) {
+            const analysisData = await analysisResponse.json();
+            setUser(prevState => ({
+              ...prevState,
+              average_payback_time: analysisData.average_payback_time,
+              total_owed: analysisData.total_owed
+            }));
+          } else {
+            console.error('Average payback time fetch failed');
+          }
+
         } else {
           throw new Error('Profile fetch failed');
         }
@@ -225,7 +246,16 @@ export default function Profile() {
     <div className="flex flex-col items-center justify-center h-screen">
       <TopBar title="Profile" />
       <h1 className="text-3xl font-bold mb-10">WELCOME BACK, {user.username}</h1>
-      <div className="profile-info w-half max-w-md mb-4">
+      <div className="justify-between items-center mb-2 text-gray-500">
+        <strong>Average Payback Time:</strong>
+        <span>{user.average_payback_time || 'N/A'}</span>
+      </div>
+      <div className="justify-between items-center mb-4 text-gray-500">
+        <strong>Total Owed:</strong>
+        <span>{user.total_owed || 'N/A'}</span>
+      </div>
+      <div className="profile-info w-half max-w-md mb-4 text-l">
+    
         <div className="flex justify-between items-center">
           <strong>Email:</strong> {!isEditingEmail ? (
             <span>
@@ -270,10 +300,10 @@ export default function Profile() {
             </div>
           )}
         </div>
-        <div className="flex justify-between items-center mt-2">
+        <div className="flex justify-between items-center mt-4">
         <strong>2FA Auth:</strong> {user.tfa_enabled ? "Enabled" : "Disabled"}
         {user.tfa_enabled ? (
-          <button onClick={disable2FA} className="ml-2 px-3 py-1 bg-yellow-600 text-black rounded hover:bg-yellow-500">
+          <button onClick={disable2FA} className="ml-2 px-3 py-1 bg-gray-400 text-white rounded hover:bg-yellow-500">
             Disable
           </button>
         ) : (
@@ -294,7 +324,7 @@ export default function Profile() {
         
         {/* Display error message if it exists */}
        
-        <button onClick={() => router.push('/')} className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Back to Home</button>
+        <button onClick={() => router.push('/')} className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Home</button>
         <button onClick={handleLogout} className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">
           Logout
         </button>

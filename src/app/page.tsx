@@ -9,6 +9,7 @@ export default function Home() {
       <Link href="/login">Link to login page</Link>
       <Link href="/home">Link to home page</Link>
       <Link href="/profile">Profile</Link>
+      <Link href="/welcome">WeSplit</Link>
     </main>
   );
 }
