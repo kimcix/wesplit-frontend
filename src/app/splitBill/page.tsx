@@ -2,6 +2,7 @@
 import React, { ChangeEvent, ChangeEventHandler, useEffect, useState  } from 'react';
 import BottomNavBar from '../components/bottomNavigationBar'
 import TopBar from '../components/topBar'
+import { MdAssignment } from 'react-icons/md';
 
 const my_name = 'Lifan';
 const my_id = 0;
@@ -50,7 +51,7 @@ const contacts = {
     } 
 } ;
 
-const HomePage = () => {
+const SplitBill = () => {
     
     const [inputMethod, setInputMethod] = useState('total');
     const [splitMethod, setSplitMethod] = useState('equal');
@@ -204,6 +205,7 @@ const HomePage = () => {
         });
         console.log(selectedUsers)
     }
+
     function split() {
         if (splitMethod === 'equal') {
             setParticipantsValue(parseFloat((totalAmount / selectedUsers.length).toFixed(2)));
@@ -211,7 +213,37 @@ const HomePage = () => {
         console.log(selectedUsers);
     }
 
+    const createSplitBill = async () => {
+        if (splitMethod === 'equal') {
+            setParticipantsValue(parseFloat((totalAmount / selectedUsers.length).toFixed(2)));
+        }        
+        // const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
+        const response = await fetch('http://localhost:5005/splitBill', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            // 'Authorization': `Bearer ${token}` // Pass the authentication token
+          },
+          body: JSON.stringify({ 
+                    masterBillName:     'test master bill',
+                    creator:            my_name,
+                    masterBillTotal:    totalAmount,
+                    splitMethod:        splitMethod,
+                    assignment:         selectedUsers
+                 }) 
+        });
+    
+        if (response.ok) {
+          const res = await response.json();
+          console.log('split bill created', res['id']);
+        } else {
+          // Handle errors, e.g., show an error message to the user
+          console.error('Failed to create split bill');
+        }
+      };
+
     useEffect(() => {validateSplit();})
+
   return (
     <div>
         <TopBar title="Split Bill" />
@@ -415,7 +447,7 @@ const HomePage = () => {
                 </div>
             }            
 
-            <button className='mt-2 border border-gray-300 rounded-md' disabled={!configureState || totalAmount === 0} onClick={() => split()}>Split It!</button>
+            <button className='mt-2 border border-gray-300 rounded-md' disabled={!configureState || totalAmount === 0} onClick={createSplitBill}>Split It!</button>
 
         </div>
 
@@ -426,4 +458,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default SplitBill;
