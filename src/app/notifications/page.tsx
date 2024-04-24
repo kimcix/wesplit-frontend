@@ -106,10 +106,12 @@ const HomePage = () => {
                 fetchUserNotificationHistories();
                 // Display a notification pop-up window
                 console.log("socket data: ", data);
-                setNotification({title: data.notificationTitle, body: data.notificationBody});
-                setTimeout(() => {
-                    setNotification(null);
-                }, 3000);
+                if (data.inAppNotificationsEnabled) {
+                    setNotification({title: data.notificationTitle, body: data.notificationBody});
+                    setTimeout(() => {
+                        setNotification(null);
+                    }, 3000);
+                }
             }
         });
         // Any clean-up code can go here

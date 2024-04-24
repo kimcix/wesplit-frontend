@@ -13,10 +13,12 @@ const HomePage = () => {
         SocketClient.connect();
         // Display a notification pop-up window when a new notification is received
         SocketClient.on("new-notification-history", data => {
-            setNotification({title: data.notificationTitle, body: data.notificationBody});
-            setTimeout(() => {
-                setNotification(null);
-            }, 3000);
+            if (data.inAppNotificationsEnabled) {
+                setNotification({title: data.notificationTitle, body: data.notificationBody});
+                setTimeout(() => {
+                    setNotification(null);
+                }, 3000);
+            }
         });
         // Any clean-up code can go here
         return () => {
