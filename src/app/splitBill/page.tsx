@@ -1,8 +1,8 @@
 'use client';
-import React, { ChangeEvent, ChangeEventHandler, useState  } from 'react';
+import React, { ChangeEvent, ChangeEventHandler, useEffect, useState  } from 'react';
 import BottomNavBar from '../components/bottomNavigationBar'
 import TopBar from '../components/topBar'
-import { CgChevronDoubleLeft } from 'react-icons/cg';
+import { SiOpencollective } from 'react-icons/si';
 
 const my_name = 'Lifan';
 const my_id = 0;
@@ -56,7 +56,14 @@ const HomePage = () => {
     const [inputMethod, setInputMethod] = useState('total');
     const [splitMethod, setSplitMethod] = useState('equal');
     const [totalAmount, setTotalAmount] = useState(0);
+    const [assignedTotal, setAssignedTotal] = useState(0);
     const [showContacts, setShowContacts] = useState(true);
+
+    // indicate if the split configure is valid
+    // possible value:
+    // 0: valid;
+    // 1: 
+    const [configureState, setConfigureState] = useState(true);
 
     const [items, setItems] = useState<{ name: string, unitPrice: number, amount: number }[]>([]); 
 
@@ -96,41 +103,51 @@ const HomePage = () => {
         setTotalAmount(0);
         setItems([{ name: '', unitPrice: 0.0, amount: 0 }]);
         resetParticipantsValue();
+        // validateSplit();
     }
 
     function handleSplitMethodChange(event: ChangeEvent<HTMLSelectElement>) {
         setSplitMethod(event.target.value);
-        console.log(event.target.value)
         resetParticipantsValue();
+        // validateSplit();
     }
 
     function handleTotalAmountChange(event: ChangeEvent<HTMLInputElement>) {
         const parsedValue = event.target.value.trim() !== '' ? parseFloat(event.target.value) : 0;
         setTotalAmount(parsedValue);
+        // validateSplit();
         console.log(event.target.value)
     }
 
-    function calcTotalFromList() {
+    function calcItemTotal() {
         setTotalAmount(items.reduce((acc, item) => {
             if (item.name.trim() !== '') {
                 return acc + (item.unitPrice * item.amount);
             }
             return acc;
         }, 0));
+        // validateSplit();
     }
+
+    function calcAssignedTotal() {
+        setAssignedTotal(selectedUsers.reduce((acc, user) => {
+            return acc + user.value;
+        }, 0));
+        console.log("calc total: ", assignedTotal)
+    }    
 
     function handleItemNameChange(index: number, event: ChangeEvent<HTMLInputElement>) {
         const newItems = [...items];
         newItems[index].name = event.target.value;
         setItems(newItems);
-        calcTotalFromList();
+        calcItemTotal();
     }
 
     function handleUnitPriceChange(index: number, event: ChangeEvent<HTMLInputElement>) {
         const newItems = [...items];
         newItems[index].unitPrice = event.target.value.trim() !== '' ? parseFloat(event.target.value) : 0;
         setItems(newItems);
-        calcTotalFromList();
+        calcItemTotal();
     }
 
     function handleAmountChange(index: number, event: ChangeEvent<HTMLInputElement>) {
@@ -143,7 +160,7 @@ const HomePage = () => {
         }        
         newItems[index].amount = parsedValue;
         setItems(newItems);
-        calcTotalFromList();
+        calcItemTotal();
     }
 
     function handleAddItem() {
@@ -158,28 +175,47 @@ const HomePage = () => {
         const newItems = [...items];
         newItems.splice(index, 1);
         setItems(newItems);
+        // validateSplit();
     }    
 
     function resetParticipantsValue() {
         selectedUsers.forEach(usr => {usr.value = 0});
     }
 
+    function validateSplit() {
+        calcAssignedTotal();
+        if ((splitMethod === 'amount' && assignedTotal !== totalAmount) ||
+            (splitMethod === 'percentage' && assignedTotal !== 100)) {
+                console.log("set false")
+                setConfigureState(false);
+        } else {
+            console.log(splitMethod)
+            setConfigureState(true);
+        }
+        console.log(assignedTotal, totalAmount, configureState)
+    }
+
     function handlePercentageChange(userId: number, event: ChangeEvent<HTMLInputElement>) {
-        console.log("percentage changed")
+        console.log("percentage changed", userId, event.target.value)
         setSelectedUsers(prevUsers => {
             if (prevUsers.find(user => user.id === userId)) {
-
+                var parsedValue = event.target.value.trim() !== '' ? parseInt(event.target.value, 10) : 0;
+                if (parsedValue > 100) {
+                    parsedValue = 100;
+                }
                 return prevUsers.map(user =>
-                    user.id === userId ? { id: userId, value: event.target.value.trim() !== '' ? parseInt(event.target.value, 10) : 0 } : user
+                    user.id === userId ? { id: userId, value: parsedValue } : user
                 );
             } 
             else {
                 return prevUsers;
             }
         });
+        // validateSplit();
         console.log(selectedUsers)
     }
-
+    
+    useEffect(() => {validateSplit();})
   return (
     <div>
         <TopBar title="Split Bill" />
@@ -315,6 +351,17 @@ const HomePage = () => {
                                             onChange={e => handlePercentageChange(user.id, e)}
                                         />                                            
                                     }
+                                    {splitMethod === "amount" && 
+                                        <input
+                                            style={{width : '80%'}}
+                                            type="number"
+                                            step="0.01"
+                                            min={0}
+                                            placeholder='amount'
+                                            value={selectedUsers.find(usr => usr.id === user.id)?.value || ''}
+                                            onChange={e => handlePercentageChange(user.id, e)}
+                                        />                                            
+                                    }                                    
                                 </td>                                
                                 <td>{user.id !== my_id && <button onClick={() => removeUser(user.id)}>X</button>}</td>
                             </tr>
@@ -322,6 +369,13 @@ const HomePage = () => {
                     </tbody>
                 </table>
             </div>
+
+            {!configureState && 
+                <div>
+                    {splitMethod === "amount" && 'Totoal Assigned Amount Not Match Master Bill'}
+                    {splitMethod === "percentage" && 'Totoal Assigned percantege Not 100%'}
+                </div>
+            }
 
             {showContacts && <div className="mt-2 max-h-[20vh] overflow-y-scroll border border-gray-300 rounded-md ">
                 {Object.keys(contacts).map(category => (
