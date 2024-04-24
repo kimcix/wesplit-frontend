@@ -52,6 +52,7 @@ const contacts = {
 
 const SplitBill = () => {
     
+    const [masterBillName, setMasterBillName] = useState('');
     const [inputMethod, setInputMethod] = useState('total');
     const [splitMethod, setSplitMethod] = useState('equal');
     const [totalAmount, setTotalAmount] = useState(0);
@@ -93,6 +94,10 @@ const SplitBill = () => {
             group.members.forEach(member => addUser(member.name));
         }
     };
+
+    function handleBillNameChange(event: ChangeEvent<HTMLInputElement>) {
+        setMasterBillName(event.target.value);
+    }
 
     function handleInputMethodChange(event: ChangeEvent<HTMLSelectElement>) {
         setInputMethod(event.target.value);
@@ -205,13 +210,6 @@ const SplitBill = () => {
         console.log(selectedUsers)
     }
 
-    function split() {
-        if (splitMethod === 'equal') {
-            setParticipantsValue(parseFloat((totalAmount / selectedUsers.length).toFixed(2)));
-        }
-        console.log(selectedUsers);
-    }
-
     const createSplitBill = async () => {
         if (splitMethod === 'equal') {
             setParticipantsValue(parseFloat((totalAmount / selectedUsers.length).toFixed(2)));
@@ -224,7 +222,7 @@ const SplitBill = () => {
             // 'Authorization': `Bearer ${token}` // Pass the authentication token
           },
           body: JSON.stringify({ 
-                    masterBillName:     'test master bill',
+                    masterBillName:     masterBillName === '' ? 'Split Bill' : masterBillName,
                     creator:            my_name,
                     masterBillTotal:    totalAmount,
                     splitMethod:        splitMethod,
@@ -236,7 +234,6 @@ const SplitBill = () => {
           const res = await response.json();
           console.log('split bill created', res['id']);
         } else {
-          // Handle errors, e.g., show an error message to the user
           console.error('Failed to create split bill');
         }
       };
@@ -249,7 +246,17 @@ const SplitBill = () => {
 
         <div className="flex flex-col mx-4">
             <div className="mt-16 text-lg font-bold">Create New Split Bill:</div>
-            <div>
+            <label className="mt-2 inline-flex items-center cursor-pointer flex flex-row justify-between w-full">
+                <span className="font-bold text-gray-700">Bill Name: </span>
+                <input
+                    style={{width : '75%'}}
+                    type="string"
+                    placeholder='Short Description'
+                    value={masterBillName}
+                    onChange={e => handleBillNameChange(e)}
+                />
+            </label>
+            <div className='mt-2'>
                 <label className="inline-flex items-center cursor-pointer flex flex-row justify-between w-full">
                     <span className="font-bold text-gray-700">Input Master Bill:</span>
                     <select 
@@ -346,7 +353,7 @@ const SplitBill = () => {
                     <option value="equal">Equally</option>
                     <option value="percentage">Specify Percentage</option>
                     <option value="amount">Specify Amount</option>
-                    <option value="items">Specify Items</option>
+                    <option value="items" disabled>More Comming</option>
                 </select>
             </label>            
 
@@ -449,7 +456,7 @@ const SplitBill = () => {
             <button className='mt-2 border border-gray-300 rounded-md' disabled={!configureState || totalAmount === 0} onClick={createSplitBill}>Split It!</button>
 
         </div>
-
+        <div className='mb-20'></div>
         <BottomNavBar />
 
     </div>
