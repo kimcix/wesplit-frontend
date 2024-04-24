@@ -26,14 +26,13 @@ export default function SplitAnalysis({
   }, []);
 
   const onSubmit = async (startDate: string, endDate: string) => {
-    const uri = analysisAPIPrefix + `/date_query?start_date=${startDate}&end_date=${endDate}`
-    const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
+    const uri = analysisAPIPrefix + `/date_query?start_date=${startDate}&end_date=${endDate}&user=${username}`
 
     let result = await fetch(uri, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
       }
     })
     .then((response) => {
