@@ -64,6 +64,11 @@ export default function Login(){
     
   }
 
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    router.push('/register');
+  }
+
   // This function will be called when the OTP modal submits
   const verifyOTP = async (otpValue: string) => {
     const partial_token = localStorage.getItem('partial_token');
@@ -131,8 +136,8 @@ export default function Login(){
           <div className="mb-4 text-red-500">{message}</div>
         )}
         <div className="flex justify-center space-x-4">
+          <button type="submit" onClick={handleRegisterSubmit} className="flex-grow px-4 py-2 mt-4 bg-gray-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Register</button>
           <button type="submit" className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Login</button>
-          <button type="submit" className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Back</button>
         </div>
 
       </form>
