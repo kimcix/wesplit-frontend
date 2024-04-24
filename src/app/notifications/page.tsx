@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect, ChangeEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import BottomNavBar from '../components/bottomNavigationBar';
 import TopBar from '../components/topBar';
 import SocketClient from '../components/socket';
@@ -14,7 +15,11 @@ interface NotificationHistory {
 }
 
 const HomePage = () => {
+    const router = useRouter();
     const username = localStorage.getItem('username');
+    if (!username) {
+        router.push('/login');
+    }
     console.log("username: ", username);
     // if (!username) {
         // TODO: Redirect to the login page
