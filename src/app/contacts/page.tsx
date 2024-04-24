@@ -1,7 +1,9 @@
 'use client';
-import { ChangeEvent, ChangeEventHandler, useState  } from 'react';
+import { ChangeEvent, ChangeEventHandler, useEffect, useState  } from 'react';
 import BottomNavBar from '../components/bottomNavigationBar'
 import TopBar from '../components/topBar'
+import { contactAPIPrefix } from '../components/apiPrefix';
+import ContactsList from './ContactsList'; 
 
 interface Contact {
     id: string;
@@ -10,7 +12,21 @@ interface Contact {
     pinned: boolean;
 }
 
+type ContactProps = {
+    contacts: {
+        _id: string;
+        individual_contacts: Array<{
+            email: string;
+            is_pinned: boolean;
+            name: string;
+        }>;
+        username: string;
+    };
+};
+
 const ContactsPage = () => {
+    const username = localStorage.getItem('username');
+    //console.log("username: ", username);
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [contactType, setContactType] = useState<'individual' | 'group'>('individual');
@@ -20,6 +36,12 @@ const ContactsPage = () => {
     const [groupId, setGroupId] = useState('');
     const [user_list, setUserList] = useState('');
     const [message, setMessage] = useState('');
+    const [groupName, setGroupName] = useState('');
+
+    useEffect(() => {
+        fetchContacts();
+    }, [username]);
+
 
     const handleAddUserField = () => {
         setUsernames([...usernames, '']);
@@ -34,70 +56,109 @@ const ContactsPage = () => {
         setUsernames(updatedUsernames);
     };
 
-    const handleAddContact = () => {
-        const newId = contactType === 'group' ? Math.random().toString().slice(2, 8) : (contacts.length + 1).toString();
-        const newContact: Contact = {
-            id: newId,
-            names: usernames,
-            type: contactType,
-            pinned: false
-        };
-        setContacts([...contacts, newContact]);
-        setShowModal(false);
-        setUsernames(['']); // Reset usernames for the next entry
-    };
-
-    const handleDeleteContact = (id: string) => {
-        setContacts(contacts.filter(contact => contact.id !== id));
-    };
-
-    const handlePinContact = (id: string) => {
-        const contact = contacts.find(contact => contact.id === id);
-        if (!contact) return;
-
-        const isPinned = contact.pinned;
-        if (!isPinned && pinnedCount >= 5) {
-            alert('You can only pin up to 5 contacts.');
-            return;
+    const fetchContacts = async () => {
+        try {
+            const response = await fetch(`${contactAPIPrefix}/contacts/${username}`, {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+              });
+            console.log(contactAPIPrefix + " , " + username)
+            const data = await response.json();
+            console.log("all contact data: ", data);
+            if (response.ok) {
+                setContacts(data);
+            } else {
+                console.error('Failed to fetch contacts');
+            }
+        } catch (error) {
+            console.error('Error fetching contacts:', error);
         }
-
-        setContacts(contacts.map(contact =>
-            contact.id === id ? { ...contact, pinned: !contact.pinned } : contact
-        ));
-        setPinnedCount(pinnedCount + (isPinned ? -1 : 1));
     };
 
-    const filteredContacts = contacts.filter(contact =>
-        contact.names.some(name => name.includes(searchTerm)) ||
-        (contact.type === 'group' && contact.id.includes(searchTerm))
-    );
-
-    const handleSubmit = async () => {
-        const response = await fetch('http://127.0.0.1:5000/api/group_contact', { // Adjust your backend port if necessary
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            group_id: groupId,
-            user_list: usernames.filter(username => username.trim() !== '') // Filter out empty usernames
-          }),
-        });
-    
-        const data = await response.json();
-        if (response.ok) {
-          setMessage('Group contact created successfully!');
-          // Optionally reset or update your application state here
-        } else {
-          setMessage(data.msg || 'An error occurred');
+    const handleAddContact = async () => {
+        const currentUser = localStorage.getItem('username'); // Retrieve the currently logged-in user's username
+        console.log("usernames are " + usernames);
+        const url = `${contactAPIPrefix}/${contactType === 'group' ? 'group_contact' : 'individual_contact'}`;
+        if (contactType === 'group') {
+            // Build the members array with the required fields for each member
+            const members = usernames.map(username => ({
+              username: username,
+              name: username, // Assuming the name is the same as the username, change as needed
+              email: `${username}@example.com`, // Modify as per your logic for deriving emails
+              is_pinned: false
+            }));
+        
+            const body = {
+              name: groupName,
+              members: members, // Array of individual_contact objects
+              is_pinned: false // This can be dynamic based on user input if needed
+            };
+        
+            // API call for group contact
+            try {
+              const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  // Include other headers such as authorization if required
+                },
+                body: JSON.stringify(body)
+              });
+        
+              if (response.ok) {
+                const newContact = await response.json();
+                setContacts([...contacts, { ...newContact, type: contactType }]);
+                setShowModal(false);
+                setUsernames(['']); // Reset usernames for the next entry
+                setMessage('Contact added successfully!');
+              } else {
+                const error = await response.json();
+                setMessage(`Failed to add contact: ${error.msg}`);
+              }
+            } catch (error) {
+              // Handle network errors
+            }
+        
+          } else {
+            const body = {
+                username: currentUser,
+                name: usernames.join(', '),
+                email: usernames[0] + '@example.com',
+                is_pinned: false
+            };
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      // Include other headers such as authorization if required
+                    },
+                    body: JSON.stringify(body)
+                  });
+            
+                  if (response.ok) {
+                    const newContact = await response.json();
+                    setContacts([...contacts, { ...newContact, type: contactType }]);
+                    setShowModal(false);
+                    setUsernames(['']); // Reset usernames for the next entry
+                    setMessage('Contact added successfully!');
+                  } else {
+                    const error = await response.json();
+                    setMessage(`Failed to add contact: ${error.msg}`);
+                  }
+                } catch (error) {
+                  // Handle network errors
+                }
         }
-      };
+    };
     
 
     return (
         <div>
             <TopBar title="My Contacts" />
-            <div className="flex flex-col p-4 pt-20">
+            <div className="flex flex-col p-4 pt-20 mb-24">
                 <input
                     type="text"
                     placeholder="Search by username or group ID"
@@ -108,29 +169,48 @@ const ContactsPage = () => {
                 <button className="mb-4 p-2 bg-blue-500 text-white rounded" onClick={() => setShowModal(true)}>
                     Add New Contact
                 </button>
+                {message && <div className="alert">{message}</div>}
                 {showModal && (
                     <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
                         <div className="bg-white p-4 rounded">
-                            <select value={contactType} onChange={(e) => setContactType(e.target.value as 'individual' | 'group')} className="mb-4 p-2 border">
+                        <select value={contactType} onChange={(e) => setContactType(e.target.value as 'individual' | 'group')} className="mb-4 p-2 border">
                                 <option value="individual">Individual Contact</option>
                                 <option value="group">Group Contact</option>
                             </select>
+
+                            {/* Conditional rendering based on contact type */}
                             {contactType === 'group' ? (
-                                usernames.map((username, index) => (
-                                    <div key={index} className="flex items-center mb-2">
-                                        <input
-                                            type="text"
-                                            placeholder={`Enter username #${index + 1}`}
-                                            value={username}
-                                            onChange={(e) => handleUsernameChange(index, e.target.value)}
-                                            className="border p-2 w-full"
-                                        />
-                                        <button onClick={() => handleRemoveUserField(index)} className="ml-2 bg-red-500 text-white p-2 rounded">
-                                            Remove
-                                        </button>
-                                    </div>
-                                ))
+                                <>
+                                    {/* Input for Group Name */}
+                                    <input
+                                        type="text"
+                                        placeholder="Enter group name"
+                                        value={groupName}
+                                        onChange={(e) => setGroupName(e.target.value)}
+                                        className="border p-2 mb-4 w-full"
+                                    />
+                                    {/* Map through the usernames for group members */}
+                                    {usernames.map((username, index) => (
+                                        <div key={index} className="flex items-center mb-2">
+                                            <input
+                                                type="text"
+                                                placeholder={`Enter username #${index + 1}`}
+                                                value={username}
+                                                onChange={(e) => handleUsernameChange(index, e.target.value)}
+                                                className="border p-2 w-full"
+                                            />
+                                            <button onClick={() => handleRemoveUserField(index)} className="ml-2 bg-red-500 text-white p-2 rounded">
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {/* Button to add more users */}
+                                    <button onClick={handleAddUserField} className="p-2 bg-green-500 text-white rounded mb-4">
+                                        Add Another User
+                                    </button>
+                                </>
                             ) : (
+                                // Input for Individual Contact's Username
                                 <input
                                     type="text"
                                     placeholder="Enter username"
@@ -139,38 +219,21 @@ const ContactsPage = () => {
                                     className="border p-2 mb-4 w-full"
                                 />
                             )}
-                            {contactType === 'group' && (
-                                <button onClick={handleAddUserField} className="p-2 bg-green-500 text-white rounded mb-4">
-                                    Add Another User
-                                </button>
-                            )}
+
+                            {/* Submit button */}
                             <button onClick={handleAddContact} className="p-2 bg-blue-500 text-white rounded">
                                 Submit
                             </button>
+                            {/* Close button */}
                             <button onClick={() => setShowModal(false)} className="p-2 bg-red-500 text-white rounded ml-2">
                                 Close
                             </button>
                         </div>
                     </div>
                 )}
-                <ul>
-                    {filteredContacts.map(contact => (
-                        <li key={contact.id} className={`flex justify-between items-center p-2 border-b ${contact.pinned ? 'bg-yellow-100' : ''}`}>
-                            <div>
-                                <p className="font-semibold">{contact.names.join(', ')}</p>
-                                <p className="text-sm text-gray-500">{contact.type === 'group' ? `Group ID: ${contact.id}` : `Username: ${contact.names[0]}`}</p>
-                            </div>
-                            <div className="flex items-center">
-                                <button onClick={() => handlePinContact(contact.id)} className="p-2 mr-2 bg-yellow-500 text-white rounded">
-                                    {contact.pinned ? 'Unpin' : 'Pin'}
-                                </button>
-                                <button onClick={() => handleDeleteContact(contact.id)} className="p-2 bg-red-500 text-white rounded">
-                                    Delete
-                                </button>
-                            </div>
-                        </li>
-                    ))}
-                </ul>
+                <div>
+                    <ContactsList />
+                </div>
             </div>
             <BottomNavBar />
         </div>
@@ -178,3 +241,6 @@ const ContactsPage = () => {
 };
 
 export default ContactsPage;
+
+
+
