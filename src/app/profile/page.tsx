@@ -10,13 +10,27 @@ import TopBar from '../components/topBar';
 
 
 export default function Profile() {
-  const [user, setUser] = useState({ username: '', email: '', tfa_enabled: false });
+  const [user, setUser] = useState({ username: '', email: '', phone_number: '', tfa_enabled: false });
   const [isLoading, setLoading] = useState(true);
   const [isEditingEmail, setEditingEmail] = useState(false);
   const [editEmail, setEditEmail] = useState('');
   const [showOTPModal, setShowOTPModal] = useState(false);
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [editPhone, setEditPhone] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
 
+  const handlePhoneEdit = () => {
+    setIsEditingPhone(true);
+  };
+  
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    // Allow only digits and limit to 10 characters
+    if (value.match(/^\d{0,10}$/)) {
+      setEditPhone(value);
+    }
+  };
 
   const disable2FA = async () => {
     const token = localStorage.getItem('token');
@@ -105,6 +119,7 @@ export default function Profile() {
           setUser({
             username: userData.username,
             email: userData.email,
+            phone_number: userData.phone,
             tfa_enabled: userData['2fa_enabled'],
           });
         } else {
@@ -152,6 +167,24 @@ export default function Profile() {
     }
   };
 
+  const savePhone = async () => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(userManagementAPIPrefix + '/profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ phone_number: editPhone })
+    });
+    console.log(response)
+    if (response.ok) {
+      setUser((prevUser) => ({ ...prevUser, phone_number: editPhone }));
+      setIsEditingPhone(false);
+    } else {
+      console.error('Failed to update profile');
+    }
+  };
 
   if (isLoading) {
     return <p>Loading...</p>;
@@ -180,6 +213,28 @@ export default function Profile() {
                 className="border px-2 py-1 rounded"
               />
               <button onClick={saveEmail} className="ml-2 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-700">
+                Save
+              </button>
+            </div>
+          )}
+        </div>
+        <div>
+          <strong>Phone Number:</strong> {!isEditingPhone ? (
+            <span>
+              {user.phone_number}
+              <button onClick={handlePhoneEdit} className="ml-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-700">
+                Edit
+              </button>
+            </span>
+          ) : (
+            <div>
+              <input
+                type="tel"
+                value={editPhone}
+                onChange={handlePhoneChange}
+                className="border px-2 py-1 rounded"
+              />
+              <button onClick={savePhone} className="ml-2 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-700">
                 Save
               </button>
             </div>

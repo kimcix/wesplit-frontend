@@ -15,7 +15,7 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch(userManagementAPIPrefix + '/register', { // Adjust your backend port if necessary
+    const response = await fetch(userManagementAPIPrefix+'/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -26,7 +26,7 @@ export default function Register() {
     const data = await response.json();
     if (response.ok) {
       setMessage('User registered successfully!');
-      router.push('/')
+      router.push('/profile')
     } else {
       setMessage(data.error || 'An error occurred');
     }

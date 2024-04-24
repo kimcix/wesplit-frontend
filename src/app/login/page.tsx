@@ -57,8 +57,9 @@ export default function Login(){
       // }
       // router.push('/profile');
     }else{
-      const data = await response.json();
-      setMessage(data.error || 'An error occurred');
+      const errorData = await response.json();
+      console.log('Error:', errorData);
+      setMessage(errorData.error);
     }
     
   }
@@ -125,6 +126,10 @@ export default function Login(){
             required
           />
         </div>
+        {/* Display error message if it exists */}
+        {message && (
+          <div className="mb-4 text-red-500">{message}</div>
+        )}
         <div className="flex justify-center space-x-4">
           <button type="submit" className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Login</button>
           <button type="submit" className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Back</button>
