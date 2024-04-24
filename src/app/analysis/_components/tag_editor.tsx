@@ -1,5 +1,6 @@
 'use client'
 
+import { analysisAPIPrefix } from '@/app/components/apiPrefix';
 import React, { useState, useEffect, ChangeEventHandler } from 'react';
 
 interface TagEditorProps {
@@ -12,8 +13,17 @@ const TagEditor: React.FC<TagEditorProps> = ({ onPostSubmit, data }) => {
     const [tagList, setTagList] = useState<any[]>([]);
 
     useEffect(() => {
-        const uri = `http://localhost:8000/fetch_tags`
-        fetch(uri)
+
+        const uri = analysisAPIPrefix + `/fetch_tags`
+        const token = localStorage.getItem('token');
+
+        fetch(uri, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              }
+        })
             .then((response) => {
                 if (response.status !== 200) {
                     console.log(`Status ${response.status} occured`)
@@ -33,8 +43,9 @@ const TagEditor: React.FC<TagEditorProps> = ({ onPostSubmit, data }) => {
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        data['analytics']['tags'] = Array.from(tags);
-        const uri = `http://localhost:8000/update_tags`;
+
+        const uri = analysisAPIPrefix + `/update_tags`;
+        const token = localStorage.getItem('token');
 
         fetch(uri, {
             method: "POST",
@@ -43,7 +54,8 @@ const TagEditor: React.FC<TagEditorProps> = ({ onPostSubmit, data }) => {
                 newTags: Array.from(tags)
             }),
             headers: {
-                "Content-type": "application/json; charset=UTF-8"
+                "Content-type": "application/json; charset=UTF-8",
+                'Authorization': `Bearer ${token}`
             }
         })
         .then((response) => {
@@ -52,6 +64,8 @@ const TagEditor: React.FC<TagEditorProps> = ({ onPostSubmit, data }) => {
                 return
             }
             else {
+                // Update locally
+                data['analytics']['tags'] = Array.from(tags);
                 return response.json()
             }
         })

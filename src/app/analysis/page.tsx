@@ -9,6 +9,7 @@ import { Suspense, useState, useEffect } from 'react';
 import Loading from './loading';
 import SubBill from './_components/subbill';
 import TagEditor from './_components/tag_editor';
+import { analysisAPIPrefix } from '../components/apiPrefix';
 
 export default function SplitAnalysis({
   auth,
@@ -25,9 +26,16 @@ export default function SplitAnalysis({
   }, []);
 
   const onSubmit = async (startDate: string, endDate: string) => {
-    const uri = `http://localhost:8000/date_query?start_date=${startDate}&end_date=${endDate}`
+    const uri = analysisAPIPrefix + `/date_query?start_date=${startDate}&end_date=${endDate}`
+    const token = localStorage.getItem('token');
 
-    let result = await fetch(uri)
+    let result = await fetch(uri, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
     .then((response) => {
       if (response.status !==200) {
         console.log(`Status ${response.status} occured`)
