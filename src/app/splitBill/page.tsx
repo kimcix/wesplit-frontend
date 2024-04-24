@@ -2,7 +2,6 @@
 import React, { ChangeEvent, ChangeEventHandler, useEffect, useState  } from 'react';
 import BottomNavBar from '../components/bottomNavigationBar'
 import TopBar from '../components/topBar'
-import { MdAssignment } from 'react-icons/md';
 
 const my_name = 'Lifan';
 const my_id = 0;
@@ -64,7 +63,7 @@ const SplitBill = () => {
 
     const [items, setItems] = useState<{ name: string, unitPrice: number, amount: number }[]>([]); 
 
-    const [selectedUsers, setSelectedUsers] = useState<{ id: number, value: number }[]>([{id: my_id, value: 0}]);
+    const [selectedUsers, setSelectedUsers] = useState<{ name: string, value: number }[]>([{name: my_name, value: 0}]);
 
     function switchShowContacts() {
         if (showContacts) {
@@ -74,24 +73,24 @@ const SplitBill = () => {
         }
     }
 
-    const addUser = (userId: number) => {
+    const addUser = (userName: string) => {
         setSelectedUsers(prevUsers => {
-            if (!prevUsers.find(user => user.id === userId)) {
-                return [...prevUsers, { id: userId, value: 0 }];
+            if (!prevUsers.find(user => user.name === userName)) {
+                return [...prevUsers, { name: userName, value: 0 }];
             } else {
                 return prevUsers;
             }
         });
     };
 
-    const removeUser = (userId: number) => {
-        setSelectedUsers(selectedUsers.filter(user => user.id !== userId));
+    const removeUser = (userName: string) => {
+        setSelectedUsers(selectedUsers.filter(user => user.name !== userName));
     };
 
     const addGroup = (type: string, groupId: number) => {
         const group = contacts[type as keyof typeof contacts].group.find(group => group.id === groupId);
         if (group) {
-            group.members.forEach(member => addUser(member.id));
+            group.members.forEach(member => addUser(member.name));
         }
     };
 
@@ -187,16 +186,16 @@ const SplitBill = () => {
         console.log(assignedTotal, totalAmount, configureState)
     }
 
-    function handlePercentageChange(userId: number, event: ChangeEvent<HTMLInputElement>) {
-        console.log("percentage changed", userId, event.target.value)
+    function handlePercentageChange(userName: string, event: ChangeEvent<HTMLInputElement>) {
+        console.log("percentage changed", userName, event.target.value)
         setSelectedUsers(prevUsers => {
-            if (prevUsers.find(user => user.id === userId)) {
+            if (prevUsers.find(user => user.name === userName)) {
                 var parsedValue = event.target.value.trim() !== '' ? parseInt(event.target.value, 10) : 0;
                 if (parsedValue > 100) {
                     parsedValue = 100;
                 }
                 return prevUsers.map(user =>
-                    user.id === userId ? { id: userId, value: parsedValue } : user
+                    user.name === userName ? { name: userName, value: parsedValue } : user
                 );
             } 
             else {
@@ -361,8 +360,8 @@ const SplitBill = () => {
                 <table>                   
                     <tbody>
                         {selectedUsers.map(user => (
-                            <tr key={user.id}>
-                                <td style={{width : '30%'}}>{user.id === my_id ? 'You' : user.id}</td>
+                            <tr key={user.name}>
+                                <td style={{width : '30%'}}>{user.name === my_name ? 'You' : user.name}</td>
                                 <td style={{width : '70%'}}>
                                     {splitMethod === "equal" && 
                                         <div>Amount: {totalAmount > 0 ? (totalAmount / selectedUsers.length).toFixed(2): 'NA'}</div>
@@ -375,8 +374,8 @@ const SplitBill = () => {
                                             min={0}
                                             max={100}
                                             placeholder='Precentage'
-                                            value={selectedUsers.find(usr => usr.id === user.id)?.value || ''}
-                                            onChange={e => handlePercentageChange(user.id, e)}
+                                            value={selectedUsers.find(usr => usr.name === user.name)?.value || ''}
+                                            onChange={e => handlePercentageChange(user.name, e)}
                                         />                                            
                                     }
                                     {splitMethod === "amount" && 
@@ -386,12 +385,12 @@ const SplitBill = () => {
                                             step="0.01"
                                             min={0}
                                             placeholder='amount'
-                                            value={selectedUsers.find(usr => usr.id === user.id)?.value || ''}
-                                            onChange={e => handlePercentageChange(user.id, e)}
+                                            value={selectedUsers.find(usr => usr.name === user.name)?.value || ''}
+                                            onChange={e => handlePercentageChange(user.name, e)}
                                         />                                            
                                     }                                    
                                 </td>                                
-                                <td>{user.id !== my_id && <button onClick={() => removeUser(user.id)}>X</button>}</td>
+                                <td>{user.name !== my_name && <button onClick={() => removeUser(user.name)}>X</button>}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -412,7 +411,7 @@ const SplitBill = () => {
                                     {group.members.map(member => (
                                         <tr key={member.id}>
                                             <td>---{member.name}</td>
-                                            <td><button onClick={() => addUser(member.id)}>Add</button></td>
+                                            <td><button onClick={() => addUser(member.name)}>Add</button></td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -424,7 +423,7 @@ const SplitBill = () => {
                                     {contacts[category as keyof typeof contacts].individual.map(individual => (
                                         <tr key={individual.id}>
                                             <td style={{width : '100%'}}>{individual.name}</td>
-                                            <td><button onClick={() => addUser(individual.id)}>Add</button></td>
+                                            <td><button onClick={() => addUser(individual.name)}>Add</button></td>
                                         </tr>
                                     ))}
                                 </tbody>
