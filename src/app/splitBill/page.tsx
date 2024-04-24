@@ -59,10 +59,7 @@ const HomePage = () => {
     const [assignedTotal, setAssignedTotal] = useState(0);
     const [showContacts, setShowContacts] = useState(true);
 
-    // indicate if the split configure is valid
-    // possible value:
-    // 0: valid;
-    // 1: 
+    // indicate if the split configure is valid 
     const [configureState, setConfigureState] = useState(true);
 
     const [items, setItems] = useState<{ name: string, unitPrice: number, amount: number }[]>([]); 
@@ -102,20 +99,17 @@ const HomePage = () => {
         setInputMethod(event.target.value);
         setTotalAmount(0);
         setItems([{ name: '', unitPrice: 0.0, amount: 0 }]);
-        resetParticipantsValue();
-        // validateSplit();
+        setParticipantsValue(0);
     }
 
     function handleSplitMethodChange(event: ChangeEvent<HTMLSelectElement>) {
         setSplitMethod(event.target.value);
-        resetParticipantsValue();
-        // validateSplit();
+        setParticipantsValue(0);
     }
 
     function handleTotalAmountChange(event: ChangeEvent<HTMLInputElement>) {
         const parsedValue = event.target.value.trim() !== '' ? parseFloat(event.target.value) : 0;
         setTotalAmount(parsedValue);
-        // validateSplit();
         console.log(event.target.value)
     }
 
@@ -126,7 +120,6 @@ const HomePage = () => {
             }
             return acc;
         }, 0));
-        // validateSplit();
     }
 
     function calcAssignedTotal() {
@@ -175,11 +168,10 @@ const HomePage = () => {
         const newItems = [...items];
         newItems.splice(index, 1);
         setItems(newItems);
-        // validateSplit();
     }    
 
-    function resetParticipantsValue() {
-        selectedUsers.forEach(usr => {usr.value = 0});
+    function setParticipantsValue(value: number) {
+        selectedUsers.forEach(usr => {usr.value = value});
     }
 
     function validateSplit() {
@@ -211,10 +203,15 @@ const HomePage = () => {
                 return prevUsers;
             }
         });
-        // validateSplit();
         console.log(selectedUsers)
     }
-    
+    function split() {
+        if (splitMethod === 'equal') {
+            setParticipantsValue(parseFloat((totalAmount / selectedUsers.length).toFixed(2)));
+        }
+        console.log(selectedUsers);
+    }
+
     useEffect(() => {validateSplit();})
   return (
     <div>
@@ -412,6 +409,8 @@ const HomePage = () => {
                     </div>
                 ))}
             </div>}
+
+            <button className='mt-2 border border-gray-300 rounded-md' disabled={!configureState} onClick={() => split()}>Split It!</button>
 
         </div>
 
