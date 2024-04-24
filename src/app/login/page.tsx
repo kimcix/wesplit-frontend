@@ -66,7 +66,7 @@ export default function Login(){
   // This function will be called when the OTP modal submits
   const verifyOTP = async (otpValue: string) => {
     const partial_token = localStorage.getItem('partial_token');
-    const response = await fetch('http://127.0.0.1:5000/verify-2fa-login', {
+    const response = await fetch(userManagementAPIPrefix +'/verify-2fa-login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

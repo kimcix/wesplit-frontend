@@ -20,7 +20,7 @@ export default function Profile() {
 
   const disable2FA = async () => {
     const token = localStorage.getItem('token');
-    const response = await fetch('userManagementAPIPrefix + /profile', {
+    const response = await fetch(userManagementAPIPrefix + '/profile', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ export default function Profile() {
   
     try {
       // Call the API to initiate the 2FA process
-      const response = await fetch('userManagementAPIPrefix + /profile', {
+      const response = await fetch(userManagementAPIPrefix + '/profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ export default function Profile() {
   // This function will be called when the OTP modal submits
   const verifyOTP = async (otpValue: string) => {
     const token = localStorage.getItem('token');
-    const response = await fetch('userManagementAPIPrefix + /verify-2fa', {
+    const response = await fetch(userManagementAPIPrefix + '/verify-2fa', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -105,7 +105,7 @@ export default function Profile() {
           setUser({
             username: userData.username,
             email: userData.email,
-            tfa_enabled: userData['tfa_enabled'],
+            tfa_enabled: userData['2fa_enabled'],
           });
         } else {
           throw new Error('Profile fetch failed');
@@ -135,7 +135,7 @@ export default function Profile() {
   // Saves the updated email to the backend
   const saveEmail = async () => {
     const token = localStorage.getItem('token');
-    const response = await fetch('userManagementAPIPrefix + /profile', {
+    const response = await fetch(userManagementAPIPrefix + '/profile', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

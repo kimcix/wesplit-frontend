@@ -51,7 +51,7 @@ const OTPModal = ({ onVerify, onCancel }) => {
         <h2>OTP Input</h2>
         <p>Enter your one-time password</p>
         <OTPInput length={6} onComplete={handleComplete} />
-        <button onClick={onVerify}>Verify</button>
+        {/* <button onClick={onVerify}>Verify</button> */}
         <button onClick={onCancel}>Cancel</button>
       </div>
     </div>
