@@ -4,7 +4,7 @@ import BottomNavBar from '../components/bottomNavigationBar';
 import TopBar from '../components/topBar';
 import SocketClient from '../components/socket';
 import Popup from '../components/popupWindow';
-import { notificationAPIPrefix } from '../components/apiPrefix';
+import { notificationAPIPrefix, userManagementAPIPrefix } from '../components/apiPrefix';
 
 interface NotificationHistory {
     notificationBody: string;
@@ -23,7 +23,8 @@ const HomePage = () => {
         inAppNotificationsEnabled: false,
         emailNotificationsEnabled: false,
         smsNotificationsEnabled: false
-      });
+    });
+    const [userPhoneNumber, setUserPhoneNumber] = useState<String | null>(null);
     const [notificationHistories, setNotificationHistories] = useState<NotificationHistory[]>([]);
     const [notification, setNotification] = useState<{ title: string, body: string } | null>(null);
 
@@ -75,6 +76,21 @@ const HomePage = () => {
             })
             console.log('user notification preferences: ', data);
         };
+        // Check if user has phone number available
+        const userPhoneNumberAPIRequestUrl = userManagementAPIPrefix + '/profile/' + username;
+        const fetchUserPhoneNumber= async () => {
+            const response = await fetch(userPhoneNumberAPIRequestUrl, {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+              });
+            if (!response.ok) {
+                throw new Error('Failed to retrieve user phone number');
+            }
+            const data = await response.json();
+            setUserPhoneNumber(data.phone_number);
+        };
         // Fetch user notification histories
         const notificationHistoryAPIRequestUrl = notificationAPIPrefix + '/notifications/histories?username=' + username;
         const fetchUserNotificationHistories = async () => {
@@ -99,6 +115,7 @@ const HomePage = () => {
         };
         // Retrieve initial user data
         fetchUserNotificationPreferences();
+        fetchUserPhoneNumber();
         fetchUserNotificationHistories();
         // Update the list of notification histories and display a popup window
         SocketClient.on("new-notification-history", data => {
@@ -173,11 +190,12 @@ const HomePage = () => {
                         type="checkbox"
                         checked={userNotificationPreference.smsNotificationsEnabled} // Set the default value here
                         value="smsNotificationsEnabled"
-                        className="sr-only peer" 
+                        className="sr-only peer"
+                        disabled={!userPhoneNumber}
                         onChange={handleNotificationToggleChange}
                     />
                     <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-400 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                    <span className="ms-3 font-medium text-gray-700">SMS notifications</span>
+                    <span className="ms-3 font-medium text-gray-700">SMS notifications {!userPhoneNumber && <>(To enable SMS notifications, you must add a phone number in profile)</>}</span>
                 </label>
 
             </div>
