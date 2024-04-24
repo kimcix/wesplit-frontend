@@ -1,166 +1,311 @@
-// pages/profile.tsx
 'use client'
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import OTPModal from '../components/OTPModal';
+import { userManagementAPIPrefix } from '../components/apiPrefix';
+import BottomNavBar from '../components/bottomNavigationBar';
+import TopBar from '../components/topBar';
 
-import BottomNavBar from '../components/bottomNavigationBar'
-import TopBar from '../components/topBar'
 
 export default function Profile() {
-  const [user, setUser] = useState({ username: '', email: '' });
+  const [user, setUser] = useState({ username: '', email: '', phone_number: '', tfa_enabled: false });
   const [isLoading, setLoading] = useState(true);
   const [isEditingEmail, setEditingEmail] = useState(false);
   const [editEmail, setEditEmail] = useState('');
+  const [showOTPModal, setShowOTPModal] = useState(false);
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [editPhone, setEditPhone] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
 
-  const handleEmailEdit = () => {
-    setEditEmail(user.email); 
-    setEditingEmail(true);
+  const handlePhoneEdit = () => {
+    setIsEditingPhone(true);
   };
-
-  const handleEmailChange = (e) => {
-    setEditEmail(e.target.value);
-  };
-
-  const saveEmail = async () => {
-    // Assuming you have a backend endpoint '/update-profile' to handle the profile update
-    const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
-    const response = await fetch('http://127.0.0.1:5000/profile', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}` // Pass the authentication token
-      },
-      body: JSON.stringify({ email: editEmail }) // Send the updated email
-    });
-
-    if (response.ok) {
-      const updatedUser = await response.json();
-      console.log('Updated user data:', updatedUser);
-      setUser((prevUser) => ({ ...prevUser, email: editEmail }));
-      setEditingEmail(false);
-    } else {
-      // Handle errors, e.g., show an error message to the user
-      console.error('Failed to update profile');
+  
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    // Allow only digits and limit to 10 characters
+    if (value.match(/^\d{0,10}$/)) {
+      setEditPhone(value);
     }
   };
 
+  const disable2FA = async () => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(userManagementAPIPrefix + '/profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ '2fa_enabled': false }) // Update the 2fa_enabled to false
+    });
+
+    if (response.ok) {
+      console.log('2FA disabled successfully');
+      setUser((prevUser) => ({ ...prevUser, tfa_enabled: false }));
+    } else {
+      console.error('Failed to disable 2FA');
+      // Handle errors here, possibly showing an error message to the user
+    }
+  };
+  const enable2FA = async () => {
+    const token = localStorage.getItem('token');
+  
+    try {
+      // Call the API to initiate the 2FA process
+      const response = await fetch(userManagementAPIPrefix + '/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ '2fa_enabled': true })
+      });
+  
+      if (response.ok) {
+        console.log('2FA initiation successful');
+        setShowOTPModal(true);
+      } else {
+        // If the response is not okay, log the error or show an error message
+        console.error('Failed to initiate 2FA');
+        const errorResponse = await response.json();
+        console.error(errorResponse.msg);
+        // Handle different response statuses here, e.g., 400 or 404
+      }
+    } catch (error) {
+      console.error('Error during 2FA initiation:', error);
+    }
+  };
+
+  // This function will be called when the OTP modal submits
+  const verifyOTP = async (otpValue: string) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(userManagementAPIPrefix + '/verify-2fa', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ otp: otpValue })
+    });
+
+    if (response.ok) {
+      console.log(otpValue)
+      const data = await response.json()
+      setUser((prevUser) => ({ ...prevUser, tfa_enabled: true }));
+      setShowOTPModal(false); // Hide the OTP modal on success
+    } else {
+      console.error('Failed to verify 2FA OTP');
+      // You might want to display an error message to the user here
+    }
+  };
+
+  // Fetches user profile data from the backend
   useEffect(() => {
-    // This function should be called to fetch the user data
     const fetchProfile = async () => {
-      const token = localStorage.getItem('token'); // Retrieve the token from localStorage
+      const token = localStorage.getItem('token');
       try {
-        const response = await fetch('http://127.0.0.1:5000/profile', {
+        const response = await fetch(userManagementAPIPrefix + '/profile', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
         if (response.ok) {
           const userData = await response.json();
+          console.log(userData);
           setUser({
             username: userData.username,
-            email: userData.email
+            email: userData.email,
+            phone_number: userData.phone,
+            tfa_enabled: userData['2fa_enabled'],
           });
         } else {
           throw new Error('Profile fetch failed');
         }
       } catch (error) {
         console.error('An error occurred:', error);
-        // If there's an error or the response is not ok, navigate back to login
         router.push('/login');
       } finally {
-        setLoading(false); // Set loading to false after the request is finished
+        setLoading(false);
       }
     };
 
     fetchProfile();
   }, [router]);
 
-  const handleBack = () => {
-    router.push('/');
+  // Handles the initiation of email editing
+  const handleEmailEdit = () => {
+    setEditEmail(user.email); 
+    setEditingEmail(true);
+  };
+
+  // Handles changes to the email input field
+  const handleEmailChange = (e) => {
+    setEditEmail(e.target.value);
+  };
+
+  // Saves the updated email to the backend
+  const saveEmail = async () => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(userManagementAPIPrefix + '/profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ email: editEmail })
+    });
+
+    if (response.ok) {
+      setUser((prevUser) => ({ ...prevUser, email: editEmail }));
+      setEditingEmail(false);
+    } else {
+      const errorData = await response.json();
+      console.error('Failed to update profile:', errorData);
+      setErrorMessage(errorData.error);
+    }
+  };
+
+  const savePhone = async () => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(userManagementAPIPrefix + '/profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ phone_number: editPhone })
+    });
+    console.log(response)
+    if (response.ok) {
+      setUser((prevUser) => ({ ...prevUser, phone_number: editPhone }));
+      setIsEditingPhone(false);
+    } else {
+      const errorData = await response.json();
+      console.error('Failed to update profile:', errorData);
+      setErrorMessage(errorData.error);
+    }
   };
 
   if (isLoading) {
     return <p>Loading...</p>;
   }
 
-
+  const handleLogout = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      // Send a request to the backend to invalidate the token
+      await fetch(userManagementAPIPrefix + '/logout', {
+        method: 'POST',  // or GET, depending on the API
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      // Handle response as necessary...
+    } catch (error) {
+      console.error('Logout failed', error);
+    }
+    
+    // Clear the client storage and update state
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('partial_token')
+    // Update the application state
+    // setUser(null); // If using context or state management
+    // Redirect to login
+    router.push('/login');
+  };
   
+
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <h1 className="text-2xl font-bold mb-4">Welcome back, {user.username}</h1>
-      <div className="mb-8">
-        {/* Ideally, you would fetch and display the user's image here */}
-        <Image src="/default-profile.png" alt="Profile Picture" width={128} height={128} />
-      </div>
-      <div className="mb-4">
-        <p><strong>Username:</strong> {user.username}</p>
-        {/* <p><strong>Email:</strong> {user.email}</p> */}
-        <strong>Email:</strong> {!isEditingEmail ? (
-          <span>
-            {user.email}
-            <button onClick={handleEmailEdit} className="ml-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-700">
-              Edit
-            </button>
-          </span>
+      <TopBar title="Profile" />
+      <h1 className="text-3xl font-bold mb-10">WELCOME BACK, {user.username}</h1>
+      <div className="profile-info w-half max-w-md mb-4">
+        <div className="flex justify-between items-center">
+          <strong>Email:</strong> {!isEditingEmail ? (
+            <span>
+              {user.email}
+              <button onClick={handleEmailEdit} className="ml-2 px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-400">
+                Edit
+              </button>
+            </span>
+          ) : (
+            <div className='mt-2'>
+              <input
+                type="text"
+                value={editEmail}
+                onChange={handleEmailChange}
+                className="border px-2 py-1 rounded"
+              />
+              <button onClick={saveEmail} className="ml-2 px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-500">
+                Save
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="flex justify-between items-center mt-2">
+          <strong>Phone Number:</strong> {!isEditingPhone ? (
+            <span>
+              {user.phone_number}
+              <button onClick={handlePhoneEdit} className="ml-2 px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-400">
+                Edit
+              </button>
+            </span>
+          ) : (
+            <div className='mt-2'>
+              <input
+                type="tel"
+                value={editPhone}
+                onChange={handlePhoneChange}
+                className="border px-2 py-1 rounded"
+              />
+              <button onClick={savePhone} className="ml-2 px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-500">
+                Save
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="flex justify-between items-center mt-2">
+        <strong>2FA Auth:</strong> {user.tfa_enabled ? "Enabled" : "Disabled"}
+        {user.tfa_enabled ? (
+          <button onClick={disable2FA} className="ml-2 px-3 py-1 bg-yellow-600 text-black rounded hover:bg-yellow-500">
+            Disable
+          </button>
         ) : (
-          <div>
-            <input
-              type="text"
-              value={editEmail}
-              onChange={handleEmailChange}
-              className="border px-2 py-1 rounded"
-            />
-            <button onClick={saveEmail} className="ml-2 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-700">
-              Save
-            </button>
-          </div>
+          <button onClick={enable2FA} className="ml-2 px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-400">
+            Enable
+          </button>
         )}
       </div>
-      <div className="flex justify-center space-x-4">
-        <button onClick={handleBack} className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Back to Home</button>
       </div>
-      <BottomNavBar></BottomNavBar>
-    </div>
+
+      <div>
+          {errorMessage && (
+            <div className="mb-4 text-red-500">{errorMessage}</div>
+          )}
+      </div>
     
+      <div className="flex justify-center space-x-4">
+        
+        {/* Display error message if it exists */}
+       
+        <button onClick={() => router.push('/')} className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Back to Home</button>
+        <button onClick={handleLogout} className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">
+          Logout
+        </button>
+      </div>
+      {showOTPModal && (
+        <OTPModal
+          onVerify={verifyOTP}
+          onCancel={() => setShowOTPModal(false)}
+        />
+      )}
+      <BottomNavBar />
+    </div>
   );
 }
-
-
-// import { useEffect, useState } from 'react';
-// import Image from 'next/image';
-// import { useRouter } from 'next/navigation';
-
-// export default function Profile(){
-//   const [username, setUsername] = useState('');
-//   const [password, setPassword] = useState('');
-//   const [email, setEmail] = useState('');
-//   const router = useRouter();
-
-//   const token = window.localStorage.getItem('token');
-
-//   return (
-//     <div className="flex flex-col items-center justify-center h-screen">
-//       <h1 className="text-2xl font-bold mb-4">Welcome back, Username</h1>
-//       <div className="mb-8">
-//         {/* insert image gere */}
-//       </div>
-//       <form className="w-64" >
-//         <div className="mb-4">
-//           <label htmlFor="username" className="block mb-1">Username</label>
-//         </div>
-//         <div className="mb-4">
-//           <label htmlFor="password" className="block mb-1">Password</label>
-//         </div>
-//         <div className="flex justify-center space-x-4">
-//           <button type="submit" className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Back</button>
-//         </div>
-
-//       </form>
-//     </div>
-//   );
-
-// }
