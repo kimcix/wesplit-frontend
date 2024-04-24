@@ -2,9 +2,9 @@
 import React, { ChangeEvent, ChangeEventHandler, useEffect, useState  } from 'react';
 import BottomNavBar from '../components/bottomNavigationBar'
 import TopBar from '../components/topBar'
+import { useRouter } from 'next/navigation';
 
-const my_name = 'Lifan';
-const my_id = 0;
+// const my_id = 0;
 const contacts = {
     pinned:{
         individual: [
@@ -51,7 +51,14 @@ const contacts = {
 } ;
 
 const SplitBill = () => {
-    
+    const username = localStorage.getItem('username');
+    const my_name = !username? ' ' : username;
+
+    const router = useRouter();
+    if (!username) {
+        // router.push('/login');
+    }
+
     const [masterBillName, setMasterBillName] = useState('');
     const [inputMethod, setInputMethod] = useState('total');
     const [splitMethod, setSplitMethod] = useState('equal');
