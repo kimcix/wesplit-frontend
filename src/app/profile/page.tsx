@@ -10,13 +10,27 @@ import TopBar from '../components/topBar';
 
 
 export default function Profile() {
-  const [user, setUser] = useState({ username: '', email: '', tfa_enabled: false });
+  const [user, setUser] = useState({ username: '', email: '', phone_number: '', tfa_enabled: false });
   const [isLoading, setLoading] = useState(true);
   const [isEditingEmail, setEditingEmail] = useState(false);
   const [editEmail, setEditEmail] = useState('');
   const [showOTPModal, setShowOTPModal] = useState(false);
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [editPhone, setEditPhone] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
 
+  const handlePhoneEdit = () => {
+    setIsEditingPhone(true);
+  };
+  
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    // Allow only digits and limit to 10 characters
+    if (value.match(/^\d{0,10}$/)) {
+      setEditPhone(value);
+    }
+  };
 
   const disable2FA = async () => {
     const token = localStorage.getItem('token');
@@ -105,6 +119,7 @@ export default function Profile() {
           setUser({
             username: userData.username,
             email: userData.email,
+            phone_number: userData.phone,
             tfa_enabled: userData['2fa_enabled'],
           });
         } else {
@@ -148,58 +163,141 @@ export default function Profile() {
       setUser((prevUser) => ({ ...prevUser, email: editEmail }));
       setEditingEmail(false);
     } else {
-      console.error('Failed to update profile');
+      const errorData = await response.json();
+      console.error('Failed to update profile:', errorData);
+      setErrorMessage(errorData.error);
     }
   };
 
+  const savePhone = async () => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(userManagementAPIPrefix + '/profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ phone_number: editPhone })
+    });
+    console.log(response)
+    if (response.ok) {
+      setUser((prevUser) => ({ ...prevUser, phone_number: editPhone }));
+      setIsEditingPhone(false);
+    } else {
+      const errorData = await response.json();
+      console.error('Failed to update profile:', errorData);
+      setErrorMessage(errorData.error);
+    }
+  };
 
   if (isLoading) {
     return <p>Loading...</p>;
   }
 
+  const handleLogout = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      // Send a request to the backend to invalidate the token
+      await fetch(userManagementAPIPrefix + '/logout', {
+        method: 'POST',  // or GET, depending on the API
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      // Handle response as necessary...
+    } catch (error) {
+      console.error('Logout failed', error);
+    }
+    
+    // Clear the client storage and update state
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('partial_token')
+    // Update the application state
+    // setUser(null); // If using context or state management
+    // Redirect to login
+    router.push('/login');
+  };
+  
+
+
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <TopBar title="Profile" />
-      <h1 className="text-2xl font-bold mb-4">Welcome back, {user.username}</h1>
-      <div className="mb-4">
-        <p><strong>Username:</strong> {user.username}</p>
-        <div>
+      <h1 className="text-3xl font-bold mb-10">WELCOME BACK, {user.username}</h1>
+      <div className="profile-info w-half max-w-md mb-4">
+        <div className="flex justify-between items-center">
           <strong>Email:</strong> {!isEditingEmail ? (
             <span>
               {user.email}
-              <button onClick={handleEmailEdit} className="ml-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-700">
+              <button onClick={handleEmailEdit} className="ml-2 px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-400">
                 Edit
               </button>
             </span>
           ) : (
-            <div>
+            <div className='mt-2'>
               <input
                 type="text"
                 value={editEmail}
                 onChange={handleEmailChange}
                 className="border px-2 py-1 rounded"
               />
-              <button onClick={saveEmail} className="ml-2 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-700">
+              <button onClick={saveEmail} className="ml-2 px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-500">
                 Save
               </button>
             </div>
           )}
         </div>
-        <div>
+        <div className="flex justify-between items-center mt-2">
+          <strong>Phone Number:</strong> {!isEditingPhone ? (
+            <span>
+              {user.phone_number}
+              <button onClick={handlePhoneEdit} className="ml-2 px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-400">
+                Edit
+              </button>
+            </span>
+          ) : (
+            <div className='mt-2'>
+              <input
+                type="tel"
+                value={editPhone}
+                onChange={handlePhoneChange}
+                className="border px-2 py-1 rounded"
+              />
+              <button onClick={savePhone} className="ml-2 px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-500">
+                Save
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="flex justify-between items-center mt-2">
         <strong>2FA Auth:</strong> {user.tfa_enabled ? "Enabled" : "Disabled"}
         {user.tfa_enabled ? (
-          <button onClick={disable2FA} className="ml-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-700">
+          <button onClick={disable2FA} className="ml-2 px-3 py-1 bg-yellow-600 text-black rounded hover:bg-yellow-500">
             Disable
           </button>
         ) : (
-          <button onClick={enable2FA} className="ml-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-700">
+          <button onClick={enable2FA} className="ml-2 px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-400">
             Enable
           </button>
         )}
       </div>
       </div>
+
+      <div>
+          {errorMessage && (
+            <div className="mb-4 text-red-500">{errorMessage}</div>
+          )}
+      </div>
+    
       <div className="flex justify-center space-x-4">
+        
+        {/* Display error message if it exists */}
+       
         <button onClick={() => router.push('/')} className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Back to Home</button>
+        <button onClick={handleLogout} className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">
+          Logout
+        </button>
       </div>
       {showOTPModal && (
         <OTPModal
