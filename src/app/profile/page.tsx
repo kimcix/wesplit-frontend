@@ -324,7 +324,7 @@ export default function Profile() {
         
         {/* Display error message if it exists */}
        
-        <button onClick={() => router.push('/')} className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Home</button>
+        <button onClick={() => router.push('/home')} className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Home</button>
         <button onClick={handleLogout} className="flex-grow px-4 py-2 mt-4 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">
           Logout
         </button>
