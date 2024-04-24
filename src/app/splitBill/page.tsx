@@ -2,7 +2,6 @@
 import React, { ChangeEvent, ChangeEventHandler, useEffect, useState  } from 'react';
 import BottomNavBar from '../components/bottomNavigationBar'
 import TopBar from '../components/topBar'
-import { SiOpencollective } from 'react-icons/si';
 
 const my_name = 'Lifan';
 const my_id = 0;
@@ -367,13 +366,6 @@ const HomePage = () => {
                 </table>
             </div>
 
-            {!configureState && 
-                <div>
-                    {splitMethod === "amount" && 'Totoal Assigned Amount Not Match Master Bill'}
-                    {splitMethod === "percentage" && 'Totoal Assigned percantege Not 100%'}
-                </div>
-            }
-
             {showContacts && <div className="mt-2 max-h-[20vh] overflow-y-scroll border border-gray-300 rounded-md ">
                 {Object.keys(contacts).map(category => (
                     <div key={category}>
@@ -410,7 +402,20 @@ const HomePage = () => {
                 ))}
             </div>}
 
-            <button className='mt-2 border border-gray-300 rounded-md' disabled={!configureState} onClick={() => split()}>Split It!</button>
+            {(!configureState || totalAmount === 0) && 
+                <div className='mt-2 border border-red-300 rounded-md'>
+                    <div className='flex flex-row justify-center'>Configuration Error:</div>
+                    {totalAmount === 0 && (<div className='flex flex-row justify-center'>Master Bill Total Amount Cannot Be 0!</div>)}
+                    {!configureState && 
+                        <div className='flex flex-row justify-center'>
+                            {splitMethod === "amount" && 'Totoal Assigned Amount Not Match Master Bill'}
+                            {splitMethod === "percentage" && 'Totoal Assigned percantege Not 100%'}
+                        </div>
+                    }
+                </div>
+            }            
+
+            <button className='mt-2 border border-gray-300 rounded-md' disabled={!configureState || totalAmount === 0} onClick={() => split()}>Split It!</button>
 
         </div>
 
