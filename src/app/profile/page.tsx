@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import OTPModal from '../components/OTPModal';
+import { userManagementAPIPrefix } from '../components/apiPrefix';
 import BottomNavBar from '../components/bottomNavigationBar';
 import TopBar from '../components/topBar';
+
 
 export default function Profile() {
   const [user, setUser] = useState({ username: '', email: '', tfa_enabled: false });
@@ -18,7 +20,7 @@ export default function Profile() {
 
   const disable2FA = async () => {
     const token = localStorage.getItem('token');
-    const response = await fetch('http://127.0.0.1:5000/profile', {
+    const response = await fetch('userManagementAPIPrefix + /profile', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -40,7 +42,7 @@ export default function Profile() {
   
     try {
       // Call the API to initiate the 2FA process
-      const response = await fetch('http://127.0.0.1:5000/profile', {
+      const response = await fetch('userManagementAPIPrefix + /profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,7 +69,7 @@ export default function Profile() {
   // This function will be called when the OTP modal submits
   const verifyOTP = async (otpValue: string) => {
     const token = localStorage.getItem('token');
-    const response = await fetch('http://127.0.0.1:5000/verify-2fa', {
+    const response = await fetch('userManagementAPIPrefix + /verify-2fa', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -92,7 +94,7 @@ export default function Profile() {
     const fetchProfile = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch('http://127.0.0.1:5000/profile', {
+        const response = await fetch(userManagementAPIPrefix + '/profile', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -133,7 +135,7 @@ export default function Profile() {
   // Saves the updated email to the backend
   const saveEmail = async () => {
     const token = localStorage.getItem('token');
-    const response = await fetch('http://127.0.0.1:5000/profile', {
+    const response = await fetch('userManagementAPIPrefix + /profile', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

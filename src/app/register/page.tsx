@@ -3,6 +3,8 @@
 'use client'
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { userManagementAPIPrefix } from '../components/apiPrefix';
+
 
 export default function Register() {
   const [username, setUsername] = useState('');
@@ -13,7 +15,7 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch('http://127.0.0.1:5000/register', { // Adjust your backend port if necessary
+    const response = await fetch(userManagementAPIPrefix + '/register', { // Adjust your backend port if necessary
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

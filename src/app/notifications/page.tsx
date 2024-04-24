@@ -1,12 +1,10 @@
 'use client';
-import { ChangeEvent } from 'react';
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 import BottomNavBar from '../components/bottomNavigationBar';
 import TopBar from '../components/topBar';
 import SocketClient from '../components/socket';
 import Popup from '../components/popupWindow';
-
-const apiPrefix = 'http://127.0.0.1:5000';
+import { notificationAPIPrefix } from '../components/apiPrefix';
 
 interface NotificationHistory {
     notificationBody: string;
@@ -16,8 +14,11 @@ interface NotificationHistory {
 }
 
 const HomePage = () => {
-    // TODO: Replace the placeholder below with the real username
-    const username = 'unique';
+    const username = localStorage.getItem('username');
+    console.log("username: ", username);
+    // if (!username) {
+        // TODO: Redirect to the login page
+    // }
     const [userNotificationPreference, setUserNotificationPreference] = useState({
         inAppNotificationsEnabled: false,
         emailNotificationsEnabled: false,
@@ -31,7 +32,7 @@ const HomePage = () => {
         event.preventDefault();
         const checkboxValue = event.target.value;
         const isChecked = event.target.checked;
-        const apiRequestUrl = apiPrefix + '/notifications/settings?username=' + username;
+        const apiRequestUrl = notificationAPIPrefix + '/notifications/settings?username=' + username;
         const requestBody = {
             'notificationPreference': checkboxValue,
             'isEnabled': isChecked,
@@ -55,7 +56,7 @@ const HomePage = () => {
         // Connect to socket
         SocketClient.connect();
         // Fetch user notification preferences
-        const notificationPreferenceAPIRequestUrl = apiPrefix + '/notifications/settings?username=' + username;
+        const notificationPreferenceAPIRequestUrl = notificationAPIPrefix + '/notifications/settings?username=' + username;
         const fetchUserNotificationPreferences = async () => {
             const response = await fetch(notificationPreferenceAPIRequestUrl, {
                 method: 'GET',
@@ -75,7 +76,7 @@ const HomePage = () => {
             console.log('user notification preferences: ', data);
         };
         // Fetch user notification histories
-        const notificationHistoryAPIRequestUrl = apiPrefix + '/notifications/histories?username=' + username;
+        const notificationHistoryAPIRequestUrl = notificationAPIPrefix + '/notifications/histories?username=' + username;
         const fetchUserNotificationHistories = async () => {
             const response = await fetch(notificationHistoryAPIRequestUrl, {
                 method: 'GET',
@@ -101,13 +102,17 @@ const HomePage = () => {
         fetchUserNotificationHistories();
         // Update the list of notification histories and display a popup window
         SocketClient.on("new-notification-history", data => {
-            fetchUserNotificationHistories();
-            // Display a notification pop-up window
-            console.log("socket data: ", data);
-            setNotification({title: data.notificationTitle, body: data.notificationBody});
-            setTimeout(() => {
-                setNotification(null);
-            }, 3000);
+            if (data.username === username) {
+                fetchUserNotificationHistories();
+                // Display a notification pop-up window
+                console.log("socket data: ", data);
+                if (data.inAppNotificationsEnabled) {
+                    setNotification({title: data.notificationTitle, body: data.notificationBody});
+                    setTimeout(() => {
+                        setNotification(null);
+                    }, 3000);
+                }
+            }
         });
         // Any clean-up code can go here
         return () => {

@@ -6,6 +6,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import OTPModal from '../components/OTPModal';
 import { useRouter } from 'next/navigation';
+import { userManagementAPIPrefix } from '../components/apiPrefix';
+
 
 export default function Login(){
   const [username, setUsername] = useState('');
@@ -17,7 +19,7 @@ export default function Login(){
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
-    const response = await fetch('http://127.0.0.1:5000/login',{
+    const response = await fetch(userManagementAPIPrefix + '/login',{
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,11 +1,12 @@
 import {Socket, io} from 'socket.io-client';
+import { notificationAPIPrefix } from '../components/apiPrefix';
 
 class SocketClient {
     private socket?: Socket;
   
     connect = () => {
       // Might need to chaneg in the future
-      const url = 'http://127.0.0.1:5000';
+      const url = notificationAPIPrefix;
       this.socket = io(url);
     };
   
