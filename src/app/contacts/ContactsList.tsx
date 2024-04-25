@@ -29,10 +29,11 @@ type ContactsResponse = {
 
 type Props = {
     searchTerm: string;
+    updateAddTrigger: boolean;
 };
 
 
-const ContactsList: React.FC<Props> = ({ searchTerm }) => {
+const ContactsList: React.FC<Props> = ({ searchTerm, updateAddTrigger}) => {
     const username = localStorage.getItem('username');
     const [contacts, setContacts] = useState<ContactsResponse>({
         others: {
@@ -77,7 +78,7 @@ const ContactsList: React.FC<Props> = ({ searchTerm }) => {
         };
 
         fetchContacts();
-    }, [username, updateTrigger]);
+    }, [username, updateTrigger, updateAddTrigger]);
 
     const handlePinContact = async (name: string, contactName: string, contactType: 'individual' | 'group') => {
         const username = localStorage.getItem('username'); // Retrieve the username from localStorage

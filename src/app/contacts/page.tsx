@@ -37,11 +37,11 @@ const ContactsPage = () => {
     const [user_list, setUserList] = useState('');
     const [message, setMessage] = useState('');
     const [groupName, setGroupName] = useState('');
-    const [updateTrigger, setUpdateTrigger] = useState(false);
+    const [updateTriggerForAddContact, setUpdateTriggerForAddContact] = useState(false);
 
     useEffect(() => {
         fetchContacts();
-    }, [username, updateTrigger]);
+    }, [username, updateTriggerForAddContact]);
 
 
     const handleAddUserField = () => {
@@ -113,7 +113,7 @@ const ContactsPage = () => {
                 setShowModal(false);
                 setUsernames(['']); // Reset usernames for the next entry
                 setMessage('Contact added successfully!');
-                setUpdateTrigger(!updateTrigger);
+                setUpdateTriggerForAddContact(!updateTriggerForAddContact);
               } else {
                 const error = await response.json();
                 setMessage(`Failed to add contact: ${error.msg}`);
@@ -145,7 +145,7 @@ const ContactsPage = () => {
                     setShowModal(false);
                     setUsernames(['']); // Reset usernames for the next entry
                     setMessage('Contact added successfully!');
-                    setUpdateTrigger(!updateTrigger);
+                    setUpdateTriggerForAddContact(!updateTriggerForAddContact);
                   } else {
                     const error = await response.json();
                     setMessage(`Failed to add contact: ${error.msg}`);
@@ -234,7 +234,7 @@ const ContactsPage = () => {
                     </div>
                 )}
                 <div>
-                    <ContactsList searchTerm={searchTerm} />
+                    <ContactsList searchTerm={searchTerm} updateAddTrigger={updateTriggerForAddContact}/>
                 </div>
             </div>
             <BottomNavBar />
