@@ -196,7 +196,7 @@ const HomePage = () => {
             </div>
 
             <div className="flex flex-col items-center mb-2">
-                <div className="font-bold text-yellow-500 text-lg self-start ml-4">Your Pinned Contacts</div>
+                <div className="font-bold text-yellow-500 text-lg self-start ml-4">Pinned Contacts</div>
             </div>
 
             <div className="ml-4 mr-4">
