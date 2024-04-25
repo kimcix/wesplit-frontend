@@ -28,12 +28,22 @@ const HomePage = () => {
         const month = String(currentDate.getMonth() + 1).padStart(2, '0');
         const day = String(currentDate.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
-      };
+    };
 
-    const getBillDate = (billDate: string): string => {
+    const getSubBillDate = (billDate: string): string => {
         const datetime = (new Date(billDate)).toLocaleString();
         const date = datetime.split(',')[0];
         return date;
+    }
+
+    const getMasterBillDate = (time: string): string => {
+        const date = new Date(time);
+        const formattedDate = date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        });
+        return formattedDate;
     }
 
     const calculateBillsOwed = (masterBill: any): number => {
@@ -160,7 +170,7 @@ const HomePage = () => {
                                     <div className="px-3 py-2">
                                         <div className="font-bold text-lg mb-1">{subBill.masterbill_name}</div>
                                         <p className="text-gray-500 text-base mb-1">you owe {subBill.creator} ${subBill.total}</p>
-                                        <p className="text-gray-500 text-base">{getBillDate(subBill.creation_time['$date'])}</p>
+                                        <p className="text-gray-500 text-base">{getSubBillDate(subBill.creation_time['$date'])}</p>
                                     </div>
                                 </div>
                             ))}
@@ -179,7 +189,7 @@ const HomePage = () => {
                                     <div className="px-3 py-2">
                                         <div className="font-bold text-lg mb-1">{masterBill.masterBillName}</div>
                                         <p className="text-gray-500 text-base mb-1">you are owed ${calculateBillsOwed(masterBill)}</p>
-                                        {/* <p className="text-gray-500 text-base">{getBillDate(masterBill.creation_time['$date'])}</p> */}
+                                        <p className="text-gray-500 text-base">{getMasterBillDate(masterBill.createAt)}</p>
                                     </div>
                                 </div>
                             ))}
