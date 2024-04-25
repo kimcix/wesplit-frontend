@@ -158,6 +158,7 @@ export default function Profile() {
         console.log(response)
         if (response.ok) {
           const userData = await response.json();
+          console.log('userData: ', userData)
           console.log(userData);
           setUser({
             username: userData.username,
@@ -175,8 +176,10 @@ export default function Profile() {
             }
           });
 
-          if (analysisResponse.ok) {
+          if (analysisResponse.status === 200) {
+            console.log('analysisResponse: ', analysisResponse)
             const analysisData = await analysisResponse.json();
+            console.log('analysisData: ', analysisData)
             setUser(prevState => ({
               ...prevState,
               average_payback_time: analysisData.average_payback_time,
@@ -192,7 +195,7 @@ export default function Profile() {
         }
       } catch (error) {
         console.error('An error occurred:', error);
-        router.push('/login');
+        // router.push('/login');
       } finally {
         setLoading(false);
       }

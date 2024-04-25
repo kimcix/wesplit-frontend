@@ -69,7 +69,6 @@ const HomePage = () => {
             }
         });
         // Fetch user sub bills (bills he/she owes)
-        // TODO: Change the user below
         const subBillsAPIRequestUrl = analysisAPIPrefix + '/date_query?start_date=2020-01-01&end_date=' + getCurrentDate() + '&user=' + username;
         const fetchSubBills = async () => {
             const response = await fetch(subBillsAPIRequestUrl, {
@@ -94,9 +93,7 @@ const HomePage = () => {
             console.log('subBill data: ', data);
         };
         // Fetch user master bills (bills others owe he/she)
-        // TODO: Change the user below
         const masterBillsAPIRequestUrl = billSplittingAPIPrefix + '/splitBill?creator=' + username;
-        // const masterBillsAPIRequestUrl = billSplittingAPIPrefix + '/splitBill?creator=leoren';
         const fetchMasterBills = async () => {
             const response = await fetch(masterBillsAPIRequestUrl, {
                 method: 'GET',
