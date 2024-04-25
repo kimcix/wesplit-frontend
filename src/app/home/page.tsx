@@ -152,7 +152,6 @@ const HomePage = () => {
 
             <div className="flex flex-col items-center mb-8">
                 <div className="mt-20 text-lg font-bold">Total Balance</div>
-                {/* TODO: Replace with real data */}
                 {(totalOwed - totalToPay) < 0 ? (
                     <div className="text-red-700 mt-2 text-3xl font-bold">Owe ${(totalToPay - totalOwed).toFixed(2)}</div>
                 ) : (
@@ -160,7 +159,6 @@ const HomePage = () => {
                 )}
                 <div className="text-red-700 font-bold text-lg self-start mt-4 ml-4 mb-2">Bills To Pay</div>
                 <div className="flex flex-row self-start mt-1 w-full">
-                    {/* TODO: Change subBills below to be recent transactions (that include master bills*/}
                     {subBills.length === 0 ? (
                         <p className="mt-2 ml-4 text-gray-700 font-bold">No Bills to Pay</p>
                     ):(
@@ -179,7 +177,6 @@ const HomePage = () => {
                 </div>
                 <div className="text-green-700 font-bold text-lg self-start mt-6 ml-4 mb-2">Payments To Receive</div>
                 <div className="flex flex-row self-start mt-1 w-full">
-                    {/* TODO: Change subBills below to be recent transactions (that include master bills*/}
                     {masterBills.length === 0 ? (
                         <p className="mt-2 ml-4 text-gray-700 font-bold">No Payments to Receive</p>
                     ):(
