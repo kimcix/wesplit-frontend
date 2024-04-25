@@ -236,7 +236,7 @@ const ContactsList: React.FC<Props> = ({ searchTerm, updateAddTrigger}) => {
                                     </button>
                                     <button 
                                         onClick={() => handleDeleteContact(getUsername(), contact.name)}
-                                        className="p-2 bg-red-500 text-white rounded"
+                                        className="p-2 bg-gray-400 text-white rounded"
                                     >
                                         Delete
                                     </button>
@@ -259,7 +259,7 @@ const ContactsList: React.FC<Props> = ({ searchTerm, updateAddTrigger}) => {
                                 </button>
                                 <button 
                                         onClick={() => handleDeleteGroupContact(groupContact.group_id)}
-                                        className="p-2 bg-red-500 text-white rounded"
+                                        className="p-2 bg-gray-400 text-white rounded"
                                     >
                                         Delete Group
                                 </button>
