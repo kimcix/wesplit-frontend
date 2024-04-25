@@ -292,14 +292,14 @@ export default function Profile() {
     <div className="flex flex-col items-center justify-center h-screen">
       <TopBar title="Profile" />
       <h1 className="text-3xl font-bold mb-10">WELCOME BACK, {user.username}</h1>
-      <div className="justify-between items-center mb-2 text-gray-500">
+      <div className="justify-between items-center mb-6 text-gray-500">
         <strong>Average Payback Time:</strong>
         <span>{user.average_payback_time || 'N/A'}</span>
       </div>
-      <div className="justify-between items-center mb-4 text-gray-500">
+      {/* <div className="justify-between items-center mb-4 text-gray-500">
         <strong>Total Owed:</strong>
         <span>{user.total_owed || 'N/A'}</span>
-      </div>
+      </div> */}
       <div className="profile-info w-half max-w-md mb-4 text-l">
     
         <div className="flex justify-between items-center">

@@ -5,7 +5,7 @@ import BottomNavBar from '../components/bottomNavigationBar'
 import TopBar from '../components/topBar'
 import SocketClient from '../components/socket';
 import Popup from '../components/popupWindow';
-import { analysisAPIPrefix, contactAPIPrefix, billSplittingAPIPrefix } from '../components/apiPrefix';
+import { analysisAPIPrefix, contactAPIPrefix, billSplittingAPIPrefix, notificationAPIPrefix } from '../components/apiPrefix';
 
 
 const HomePage = () => {
@@ -37,7 +37,9 @@ const HomePage = () => {
     }
 
     const getMasterBillDate = (time: string): string => {
+        console.log("getMasterBillDate time: ", time);
         const date = new Date(time);
+        console.log("getMasterBillDate date: ", date);
         const formattedDate = date.toLocaleDateString('en-US', {
             year: 'numeric',
             month: '2-digit',
@@ -59,15 +61,6 @@ const HomePage = () => {
     useEffect(() => {
         // Connect to socket
         SocketClient.connect();
-        // Display a notification pop-up window when a new notification is received
-        SocketClient.on("new-notification-history", data => {
-            if (data.inAppNotificationsEnabled) {
-                setNotification({title: data.notificationTitle, body: data.notificationBody});
-                setTimeout(() => {
-                    setNotification(null);
-                }, 3000);
-            }
-        });
         // Fetch user sub bills (bills he/she owes)
         const subBillsAPIRequestUrl = analysisAPIPrefix + '/date_query?start_date=2020-01-01&end_date=' + getCurrentDate() + '&user=' + username;
         const fetchSubBills = async () => {
@@ -106,9 +99,11 @@ const HomePage = () => {
             }
             const data = await response.json();
             console.log('masterBill data: ', data);
-            setMasterBills(data);
+            const filteredData = data.filter((item: any) => calculateBillsOwed(item) > 0);
+            console.log('filtered masterBill data: ', filteredData);
+            setMasterBills(filteredData);
             let owed = 0;
-            data.forEach((masterBill: any) => {
+            filteredData.forEach((masterBill: any) => {
                 owed += calculateBillsOwed(masterBill);
             })
             console.log("masterbill new balance: ", owed);
@@ -131,10 +126,37 @@ const HomePage = () => {
             setContacts(data);
             console.log('contacts data: ', data);
         };
+        // Fetch (and create) notification settings
+        const notificationSettingsAPIRequestUrl = notificationAPIPrefix + `/notifications/settings?username=${username}`;
+        const fetchNotificationSettings = async () => {
+            const response = await fetch(notificationSettingsAPIRequestUrl, {
+                method: 'GET',
+                headers: {
+                'Content-Type': 'application/json',
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to retrieve notification settings');
+            }
+            const data = await response.json();
+            console.log('notification settings data: ', data);
+        };
         // API calls
         fetchSubBills();
         fetchMasterBills();
         fetchContacts();
+        fetchNotificationSettings();
+        // Display a notification pop-up window when a new notification is received
+        SocketClient.on("new-notification-history", data => {
+            if (data.inAppNotificationsEnabled) {
+                setNotification({title: data.notificationTitle, body: data.notificationBody});
+                setTimeout(() => {
+                    setNotification(null);
+                }, 3000);
+            }
+            fetchSubBills();
+            fetchMasterBills();
+        });
         // Any clean-up code can go here
         return () => {
             SocketClient.close();
