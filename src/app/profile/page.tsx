@@ -23,6 +23,48 @@ export default function Profile() {
   const handlePhoneEdit = () => {
     setIsEditingPhone(true);
   };
+
+  const updateAvgPaybackTime = async (username, avgPaybackTime) => {
+    const token = localStorage.getItem('token');
+    username = localStorage.getItem('username');
+    const response = await fetch(userManagementAPIPrefix + '/profile/avg-payback-time', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            username: username,
+            avg_payback_time: avgPaybackTime
+          })
+        });
+
+        console.log('update response', response)
+    
+        if (!response.ok) {
+          throw new Error('Failed to update user average payback time');
+        }
+    // try {
+    //   const response = await fetch(userManagementAPIPrefix + '/profile/avg-payback-time', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'Authorization': `Bearer ${token}`
+    //     },
+    //     body: JSON.stringify({
+    //       username: username,
+    //       average_payback_time: avgPaybackTime
+    //     })
+    //   });
+  
+    //   if (!response.ok) {
+    //     throw new Error('Failed to update user average payback time');
+    //   }
+  
+    // } catch (error) {
+    //   console.error('An error occurred:', error);
+    // }
+  };
   
   const handlePhoneChange = (e) => {
     const value = e.target.value;
@@ -113,6 +155,7 @@ export default function Profile() {
             'Authorization': `Bearer ${token}`
           }
         });
+        console.log(response)
         if (response.ok) {
           const userData = await response.json();
           console.log(userData);
@@ -139,6 +182,7 @@ export default function Profile() {
               average_payback_time: analysisData.average_payback_time,
               total_owed: analysisData.total_owed
             }));
+            updateAvgPaybackTime(user.username, analysisData.average_payback_time);
           } else {
             console.error('Average payback time fetch failed');
           }
@@ -240,7 +284,6 @@ export default function Profile() {
     router.push('/login');
   };
   
-
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
