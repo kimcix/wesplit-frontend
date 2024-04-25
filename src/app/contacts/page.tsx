@@ -113,8 +113,8 @@ const ContactsPage = () => {
         
             const body = {
               name: groupName,
-              members: members, // Array of individual_contact objects
-              is_pinned: false // This can be dynamic based on user input if needed
+              members: members, 
+              is_pinned: false 
             };
         
             // API call for group contact
@@ -144,20 +144,27 @@ const ContactsPage = () => {
             }
         
         } else {
-            // For individual contact, verify the main user's profile (if necessary)
+
             const profile = await fetchUserProfile(usernames[0]);
+            //console.log("User profile: ", JSON.stringify(profile));
             if (!profile || profile.error) {
                 alert('Username is invalid');
                 return;
             }
+            
+            console.log("User profile: ", JSON.stringify(profile));
 
             const body = {
-                username: currentUser,
-                name: usernames.join(', '),
-                email: usernames[0] + '@example.com',
-                id: '1',
-                is_pinned: false
+                username: currentUser,  
+                name: profile.username,  
+                email: profile.email,    
+                id: profile.friend_id,    
+                is_pinned: false,
+                avg_payback_time: profile.avg_payback_time
             };
+
+            console.log("body: ", body)
+
             try {
                 const response = await fetch(url, {
                     method: 'POST',
