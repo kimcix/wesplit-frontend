@@ -24,7 +24,10 @@ export default function Register() {
     });
 
     const data = await response.json();
+    console.log('data', data);
     if (response.ok) {
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('username', data.username);
       setMessage('User registered successfully!');
       router.push('/profile')
     } else {
