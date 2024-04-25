@@ -202,6 +202,7 @@ const ContactsList: React.FC<Props> = ({ searchTerm, updateAddTrigger}) => {
                                 <div>
                                     <p className="font-semibold">{contact.name}</p>
                                     <p className="text-sm text-gray-500">{contact.email}</p>
+                                    <p className="text-sm text-gray-500">ID: {contact.id}</p>
                                 </div>
                                 <div className="flex items-center">
                                     <button 
@@ -240,6 +241,7 @@ const ContactsList: React.FC<Props> = ({ searchTerm, updateAddTrigger}) => {
                                         <div>
                                             <p className="font-semibold">{member.name}</p>
                                             <p className="text-sm text-gray-500">{member.email}</p>
+                                            <p className="text-sm text-gray-500">ID: {member.id}</p>
                                         </div>
                                     </li>
                                 ))}
