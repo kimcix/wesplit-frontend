@@ -5,6 +5,7 @@ import TopBar from '../components/topBar'
 import { contactAPIPrefix, userManagementAPIPrefix } from '../components/apiPrefix';
 import ContactsList from './ContactsList'; 
 
+
 interface Contact {
     id: string;
     names: string[];
@@ -204,20 +205,21 @@ const ContactsPage = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="border p-2 mb-4"
                 />
-                <button className="mb-4 p-2 bg-blue-500 text-white rounded" onClick={() => setShowModal(true)}>
+                <button className="mb-4 p-2 bg-yellow-400 text-white rounded" onClick={() => setShowModal(true)}>
                     Add New Contact
                 </button>
                 {showModal && (
-                    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
+                    <div className="fixed inset-0 bg-gray-400 bg-opacity-75 flex justify-center items-center">
                         <div className="bg-white p-4 rounded">
                         <select value={contactType} onChange={(e) => setContactType(e.target.value as 'individual' | 'group')} className="mb-4 p-2 border">
                                 <option value="individual">Individual Contact</option>
                                 <option value="group">Group Contact</option>
-                            </select>
+                        </select>
 
                             {/* Conditional rendering based on contact type */}
                             {contactType === 'group' ? (
                                 <>
+                                    
                                     {/* Input for Group Name */}
                                     <input
                                         type="text"
@@ -226,7 +228,10 @@ const ContactsPage = () => {
                                         onChange={(e) => setGroupName(e.target.value)}
                                         className="border p-2 mb-4 w-full"
                                     />
+                                    
+                                    
                                     {/* Map through the usernames for group members */}
+
                                     {usernames.map((username, index) => (
                                         <div key={index} className="flex items-center mb-2">
                                             <input
@@ -236,15 +241,18 @@ const ContactsPage = () => {
                                                 onChange={(e) => handleUsernameChange(index, e.target.value)}
                                                 className="border p-2 w-full"
                                             />
-                                            <button onClick={() => handleRemoveUserField(index)} className="ml-2 bg-red-500 text-white p-2 rounded">
+                                            
+                                            <button onClick={() => handleRemoveUserField(index)} className="ml-2 bg-gray-400 text-white p-2 rounded">
                                                 Remove
                                             </button>
                                         </div>
                                     ))}
-                                    {/* Button to add more users */}
-                                    <button onClick={handleAddUserField} className="p-2 bg-green-500 text-white rounded mb-4">
-                                        Add Another User
-                                    </button>
+                                    <div className='flex justify-center'>
+                                       <button onClick={handleAddUserField} className="p-2 bg-yellow-400 text-white rounded mb-4 mt-4">
+                                            Add Another User
+                                        </button> 
+                                    </div>
+                                    
                                 </>
                             ) : (
                                 // Input for Individual Contact's Username
@@ -256,15 +264,19 @@ const ContactsPage = () => {
                                     className="border p-2 mb-4 w-full"
                                 />
                             )}
-
-                            {/* Submit button */}
-                            <button onClick={handleAddContact} className="p-2 bg-blue-500 text-white rounded">
-                                Submit
-                            </button>
-                            {/* Close button */}
-                            <button onClick={() => setShowModal(false)} className="p-2 bg-red-500 text-white rounded ml-2">
-                                Close
-                            </button>
+                            
+                            <div className="flex justify-center gap-2 mt-4">
+                                {/* Submit button */}
+                                <button onClick={handleAddContact} className="flex p-2 bg-yellow-400 text-white rounded">
+                                    Submit
+                                </button>
+                                {/* Close button */}
+                                <button onClick={() => setShowModal(false)} className="p-2 bg-gray-400 text-white rounded ml-2">
+                                    Close
+                                </button>
+                                
+                            </div>
+                            
                             {message && (
                                 <div className="mb-4 text-red-500">{message}</div>
                             )}
