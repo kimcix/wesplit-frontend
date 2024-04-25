@@ -64,7 +64,6 @@ const ContactsPage = () => {
                   'Content-Type': 'application/json'
                 },
               });
-            console.log(contactAPIPrefix + " , " + username)
             const data = await response.json();
             console.log("all contact data: ", data);
             if (response.ok) {
@@ -121,11 +120,12 @@ const ContactsPage = () => {
               // Handle network errors
             }
         
-          } else {
+        } else {
             const body = {
                 username: currentUser,
                 name: usernames.join(', '),
                 email: usernames[0] + '@example.com',
+                id: '1',
                 is_pinned: false
             };
             try {
@@ -133,7 +133,6 @@ const ContactsPage = () => {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
-                      // Include other headers such as authorization if required
                     },
                     body: JSON.stringify(body)
                   });

@@ -153,7 +153,6 @@ const ContactsList: React.FC<Props> = ({ searchTerm }) => {
 
     const getFilteredContacts = () => {
         if (!searchTerm) {
-            console.log('No search term')
             return contacts;
         }
 
@@ -232,7 +231,7 @@ const ContactsList: React.FC<Props> = ({ searchTerm }) => {
                             </div>
                             <ul>
                                 {groupContact.members.map(member => (
-                                    <li key={member.id} className="flex justify-between items-center p-2 border-b">
+                                    <li key={`${groupContact._id}-${member.id}`} className="flex justify-between items-center p-2 border-b">
                                         <div>
                                             <p className="font-semibold">{member.name}</p>
                                             <p className="text-sm text-gray-500">{member.email}</p>
