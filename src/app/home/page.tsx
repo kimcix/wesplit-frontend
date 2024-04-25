@@ -60,19 +60,20 @@ const HomePage = () => {
         });
         // Fetch user sub bills (bills he/she owes)
         // TODO: Change the user below
-        const subBillsAPIRequestUrl = analysisAPIPrefix + '/date_query?start_date=2020-01-01&end_date=' + getCurrentDate() + '&user=2fa3';
+        const subBillsAPIRequestUrl = analysisAPIPrefix + '/date_query?start_date=2020-01-01&end_date=' + getCurrentDate() + '&user=' + username;
         const fetchSubBills = async () => {
             const response = await fetch(subBillsAPIRequestUrl, {
                 method: 'GET',
                 headers: {
-                'Content-Type': 'application/json'
+                'Contesnt-Type': 'application/json'
                 },
             });
             if (!response.ok) {
                 throw new Error('Failed to retrieve sub bills');
             }
             const res = await response.json();
-            const data = JSON.parse(res);
+            const raw = JSON.parse(res);
+            const data = raw.filter((item: any) => item.creator !== username);
             setSubBills(data);
             let toPay = 0;
             data.forEach((subBill: any) => {
@@ -81,12 +82,11 @@ const HomePage = () => {
             console.log("subbill new balance: ", toPay);
             setTotalToPay(toPay);
             console.log('subBill data: ', data);
-            console.log('getCurrentDate: ', getCurrentDate());
         };
         // Fetch user master bills (bills others owe he/she)
         // TODO: Change the user below
-        // const masterBillsAPIRequestUrl = billSplittingAPIPrefix + '/splitBill?creator=' + username;
-        const masterBillsAPIRequestUrl = billSplittingAPIPrefix + '/splitBill?creator=leoren';
+        const masterBillsAPIRequestUrl = billSplittingAPIPrefix + '/splitBill?creator=' + username;
+        // const masterBillsAPIRequestUrl = billSplittingAPIPrefix + '/splitBill?creator=leoren';
         const fetchMasterBills = async () => {
             const response = await fetch(masterBillsAPIRequestUrl, {
                 method: 'GET',
