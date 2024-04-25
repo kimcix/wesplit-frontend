@@ -27,8 +27,12 @@ type ContactsResponse = {
     };
 };
 
+type Props = {
+    searchTerm: string;
+};
 
-const ContactsList: React.FC = () => {
+
+const ContactsList: React.FC<Props> = ({ searchTerm }) => {
     const username = localStorage.getItem('username');
     const [contacts, setContacts] = useState<ContactsResponse>({
         others: {
@@ -42,11 +46,11 @@ const ContactsList: React.FC = () => {
     });
     
     // Sorting the sections so that "pinned" comes before "others"
-    const sortedEntries = Object.entries(contacts).sort(([key1], [key2]) => {
-        if (key1 === 'pinned') return -1;
-        if (key2 === 'pinned') return 1;
-        return 0;
-    });
+    // const sortedEntries = Object.entries(contacts).sort(([key1], [key2]) => {
+    //     if (key1 === 'pinned') return -1;
+    //     if (key2 === 'pinned') return 1;
+    //     return 0;
+    // });
 
     const getUsername = () => localStorage.getItem('username') || "defaultUsername";
 
@@ -144,73 +148,45 @@ const ContactsList: React.FC = () => {
         }
       };
 
-    return (
-        // <div>
-        //     {Object.entries(contacts).map(([key, group]) => (
-        //         <div key={key}>
-        //             <h3>{"key is " + key}</h3>
-        //             <h2>{key.charAt(0).toUpperCase() + key.slice(1)} Contacts</h2>
-        //             <ul>
-        //                 {group.individual_contacts.map((contact) => (
-        //                     // ... render individual contacts
-        //                     <li key={contact.id} className={`flex justify-between items-center p-2 border-b ${contact.is_pinned ? 'bg-yellow-100' : ''}`}>
-        //                         <div>
-        //                             <p className="font-semibold">{contact.name}</p>
-        //                             <p className="text-sm text-gray-500">{contact.email}</p>
-        //                         </div>
-        //                         {/* <div className="flex items-center">
-        //                             <button onClick={() => handlePinContact(contact.name)} className="p-2 mr-2 bg-yellow-500 text-white rounded">
-        //                                 {contact.is_pinned ? 'Unpin' : 'Pin'}
-        //                             </button>
-        //                             <button onClick={() => handleDeleteContact(contact.name)} className="p-2 bg-red-500 text-white rounded">
-        //                                 Delete
-        //                             </button>
-        //                         </div> */}
-        //                         <div className="flex items-center">
-        //                             <button 
-        //                                 onClick={() => handlePinContact(contact.name, contact.name, 'individual')} // Assuming this is within individual contacts mapping
-        //                                 className="p-2 mr-2 bg-yellow-500 text-white rounded"
-        //                             >
-        //                                 {contact.is_pinned ? 'Unpin' : 'Pin'}
-        //                             </button>
-        //                             {/* <button 
-        //                                 onClick={() => handleDeleteContact(contact.id)} // Assuming the delete function needs an ID
-        //                                 className="p-2 bg-red-500 text-white rounded"
-        //                             >
-        //                                 Delete
-        //                             </button> */}
-        //                         </div>
-        //                     </li>
-        //                 ))}
-        //             </ul>
-        //             {group.group_contacts.map((groupContact) => (
-        //                 // ... render group contacts
-        //                 <div key={groupContact._id}>
-        //                     <h3 className="font-semibold">Group: {groupContact.group_id}</h3>
-        //                     <ul>
-        //                         {groupContact.members.map((member) => (
-        //                             <li key={member.id} className="flex justify-between items-center p-2 border-b">
-        //                                 <div>
-        //                                     <p className="font-semibold">{member.name}</p>
-        //                                     <p className="text-sm text-gray-500">{member.email}</p>
-        //                                 </div>
-        //                                 <div className="flex items-center">
-        //                                     <button onClick={() => handlePinContact(member.id)} className="p-2 mr-2 bg-yellow-500 text-white rounded">
-        //                                         {member.is_pinned ? 'Unpin' : 'Pin'}
-        //                                     </button>
-        //                                     <button onClick={() => handleDeleteContact(member.id)} className="p-2 bg-red-500 text-white rounded">
-        //                                         Delete
-        //                                     </button>
-        //                                 </div>
-        //                             </li>
-        //                         ))}
-        //                     </ul>
-        //                 </div>
+    const filterBySearchTerm = (contact: IndividualContact) => 
+        contact.name.toLowerCase().includes(searchTerm.toLowerCase());
 
-        //             ))}
-        //         </div>
-        //     ))}
-        // </div>
+    const getFilteredContacts = () => {
+        if (!searchTerm) {
+            console.log('No search term')
+            return contacts;
+        }
+
+        const filteredOtherIndividualContacts = contacts.others.individual_contacts.filter(filterBySearchTerm);
+        const filteredOtherGroupContacts = contacts.others.group_contacts.filter(group =>
+            group.members.some(filterBySearchTerm)
+        );
+        const filteredPinnedIndividualContacts = contacts.pinned.individual_contacts.filter(filterBySearchTerm);
+        const filteredPinnedGroupContacts = contacts.pinned.group_contacts.filter(group =>
+            group.members.some(filterBySearchTerm)
+        );
+
+        // Return a new object with filtered results
+        return {
+            others: {
+                individual_contacts: filteredOtherIndividualContacts,
+                group_contacts: filteredOtherGroupContacts
+            },
+            pinned: {
+                individual_contacts: filteredPinnedIndividualContacts,
+                group_contacts: filteredPinnedGroupContacts
+            }
+        };
+    };
+
+    const filteredContacts = getFilteredContacts();
+    const sortedEntries = Object.entries(filteredContacts).sort(([key1], [key2]) => {
+        if (key1 === 'pinned') return -1;
+        if (key2 === 'pinned') return 1;
+        return 0;
+    });
+
+    return (
         <div>
             <p>Username: {username}</p>
             {sortedEntries.map(([key, group]) => (
@@ -266,32 +242,6 @@ const ContactsList: React.FC = () => {
                             </ul>
                         </div>
                     ))}
-                    {/* {group.group_contacts && group.group_contacts.map(groupContact => (
-                        <div 
-                            key={groupContact._id}
-                            className={`flex justify-between items-center p-2 border-b ${groupContact.is_pinned ? 'bg-blue-100' : ''}`} // Apply blue background if pinned
-                        >
-                            <div className="flex justify-between items-center">
-                                <h3 className="font-semibold">Group: {groupContact.name}</h3>
-                                <button 
-                                    onClick={() => handlePinContact(getUsername(), groupContact.name, 'group')}
-                                    className="p-2 bg-yellow-500 text-white rounded"
-                                >
-                                    {groupContact.is_pinned ? 'Unpin Group' : 'Pin Group'}
-                                </button>
-                            </div>
-                            <ul>
-                                {groupContact.members.map(member => (
-                                    <li key={member.id} className="flex justify-between items-center p-2 border-b">
-                                        <div>
-                                            <p className="font-semibold">{member.name}</p>
-                                            <p className="text-sm text-gray-500">{member.email}</p>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))} */}
                     
                 </div>
             ))}
