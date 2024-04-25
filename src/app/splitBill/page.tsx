@@ -3,6 +3,8 @@ import React, { ChangeEvent, ChangeEventHandler, useEffect, useState  } from 're
 import BottomNavBar from '../components/bottomNavigationBar'
 import TopBar from '../components/topBar'
 import { useRouter } from 'next/navigation';
+import SocketClient from '../components/socket';
+import Popup from '../components/popupWindow';
 
 // const my_id = 0;
 const contacts = {
@@ -65,6 +67,7 @@ const SplitBill = () => {
     const [totalAmount, setTotalAmount] = useState(0);
     const [assignedTotal, setAssignedTotal] = useState(0);
     const [showContacts, setShowContacts] = useState(true);
+    const [notification, setNotification] = useState<{ title: string, body: string } | null>(null);
 
     // indicate if the split configure is valid 
     const [configureState, setConfigureState] = useState(true);
@@ -245,11 +248,35 @@ const SplitBill = () => {
         }
       };
 
-    useEffect(() => {validateSplit();})
+    useEffect(() => {
+        // Connect to socket
+        SocketClient.connect();
+        SocketClient.on("new-notification-history", data => {
+            if (data.username === username) {
+                // Display a notification pop-up window
+                console.log("socket data: ", data);
+                if (data.inAppNotificationsEnabled) {
+                    setNotification({title: data.notificationTitle, body: data.notificationBody});
+                    setTimeout(() => {
+                        setNotification(null);
+                    }, 3000);
+                }
+            }
+        });
+
+        validateSplit();
+
+        // Any clean-up code can go here
+        return () => {
+            SocketClient.close();
+        };
+    })
 
   return (
     <div>
         <TopBar title="Split Bill" />
+
+        {notification && <Popup title={notification.title} body={notification.body} />}
 
         <div className="flex flex-col mx-4">
             <div className="mt-16 text-lg font-bold">Create New Split Bill:</div>
