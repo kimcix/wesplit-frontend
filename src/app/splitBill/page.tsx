@@ -40,10 +40,7 @@ const SplitBill = () => {
     // });
 
     const [contacts, setContacts] = useState<any[]>([])
-
     const [assignedTotal, setAssignedTotal] = useState(0);
-    const [contactLoaded, setContactLoaded] = useState(false);
-
     const [showContacts, setShowContacts] = useState(true);
     const [notification, setNotification] = useState<{ title: string, body: string } | null>(null);
 
@@ -270,7 +267,7 @@ const SplitBill = () => {
 
     useEffect(() => {
         validateSplit();
-    }, [items, selectedUsers, totalAmount, inputMethod, splitMethod])
+    }, [items, selectedUsers, totalAmount, inputMethod, splitMethod, assignedTotal])
 
   return (
     <div>
