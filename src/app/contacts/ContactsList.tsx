@@ -153,6 +153,29 @@ const ContactsList: React.FC<Props> = ({ searchTerm, updateAddTrigger}) => {
         }
       };
 
+      const handleDeleteGroupContact = async (group_id: string) => {
+        const url = `${contactAPIPrefix}/group_contact/${group_id}`;
+        try {
+          const response = await fetch(url, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+      
+          if (response.ok) {
+            const data = await response.json();
+            console.log(data.msg);
+            setUpdateTrigger(!updateTrigger);
+          } else {
+            const errorData = await response.json();
+            console.error(errorData.msg);
+          }
+        } catch (error) {
+          console.error('Network error:', error);
+        }
+      };
+
     const filterBySearchTerm = (contact: IndividualContact) => 
         contact.name.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -234,7 +257,14 @@ const ContactsList: React.FC<Props> = ({ searchTerm, updateAddTrigger}) => {
                                 >
                                     {groupContact.is_pinned ? 'Unpin Group' : 'Pin Group'}
                                 </button>
+                                <button 
+                                        onClick={() => handleDeleteGroupContact(groupContact.group_id)}
+                                        className="p-2 bg-red-500 text-white rounded"
+                                    >
+                                        Delete Group
+                                </button>
                             </div>
+                            <p className="text-sm text-gray-500">ID: {groupContact.group_id}</p>
                             <ul>
                                 {groupContact.members.map(member => (
                                     <li key={`${groupContact._id}-${member.id}`} className="flex justify-between items-center p-2 border-b">
