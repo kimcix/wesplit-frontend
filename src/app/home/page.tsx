@@ -19,7 +19,8 @@ const HomePage = () => {
     const [contacts, setContacts] = useState([]);
     const [subBills, setSubBills] = useState<any[]>([]); // JSON objects for SubBills from db
     const [masterBills, setMasterBills] = useState<any[]>([]); // JSON objects for masterBills from db
-    const [totalBalance, setTotalBalance] = useState<number>(0); // JSON objects for SubBills from db
+    const [totalOwed, setTotalOwed] = useState<number>(0); // JSON objects for SubBills from db
+    const [totalToPay, setTotalToPay] = useState<number>(0); // JSON objects for SubBills from db
 
     const getCurrentDate = (): string => {
         const currentDate = new Date();
@@ -27,12 +28,22 @@ const HomePage = () => {
         const month = String(currentDate.getMonth() + 1).padStart(2, '0');
         const day = String(currentDate.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
-      };
+    };
 
-    const getBillDate = (billDate: string): string => {
+    const getSubBillDate = (billDate: string): string => {
         const datetime = (new Date(billDate)).toLocaleString();
         const date = datetime.split(',')[0];
         return date;
+    }
+
+    const getMasterBillDate = (time: string): string => {
+        const date = new Date(time);
+        const formattedDate = date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        });
+        return formattedDate;
     }
 
     const calculateBillsOwed = (masterBill: any): number => {
@@ -73,13 +84,14 @@ const HomePage = () => {
             const res = await response.json();
             const data = JSON.parse(res);
             setSubBills(data);
-            let newBalance = totalBalance;
+            let toPay = 0;
             data.forEach((subBill: any) => {
-                newBalance -= subBill.total;
+                toPay += subBill.total;
             })
-            setTotalBalance(newBalance);
+            console.log("subbill new balance: ", toPay);
+            setTotalToPay(toPay);
             console.log('subBill data: ', data);
-            console.log('getCurrentDate: ', getCurrentDate())
+            console.log('getCurrentDate: ', getCurrentDate());
         };
         // Fetch user master bills (bills others owe he/she)
         // TODO: Change the user below
@@ -98,11 +110,12 @@ const HomePage = () => {
             const data = await response.json();
             console.log('masterBill data: ', data);
             setMasterBills(data);
-            let newBalance = totalBalance;
+            let owed = 0;
             data.forEach((masterBill: any) => {
-                newBalance += calculateBillsOwed(masterBill);
+                owed += calculateBillsOwed(masterBill);
             })
-            setTotalBalance(newBalance);
+            console.log("masterbill new balance: ", owed);
+            setTotalOwed(owed);
         };
         // Fetch user contacts
         const contactsAPIRequestUrl = contactAPIPrefix + `/contacts/all/${username}`;
@@ -117,11 +130,6 @@ const HomePage = () => {
             if (!response.ok) {
                 throw new Error('Failed to retrieve contacts');
             }
-            // console.log('response: ', response);
-            // const res = await response.json();
-            // console.log('res: ', res);
-            // console.log('data', JSON.parse(res));
-            // const data = JSON.parse(res);
             const data = await response.json();
             setContacts(data);
             console.log('contacts data: ', data);
@@ -144,21 +152,23 @@ const HomePage = () => {
 
             <div className="flex flex-col items-center mb-8">
                 <div className="mt-20 text-lg font-bold">Total Balance</div>
-                {/* TODO: Replace with real data */}
-                <div className="text-red-700 mt-2 text-3xl font-bold">Owed ${totalBalance}</div>  
+                {(totalOwed - totalToPay) < 0 ? (
+                    <div className="text-red-700 mt-2 text-3xl font-bold">Owe ${(totalToPay - totalOwed).toFixed(2)}</div>
+                ) : (
+                    <div className="text-green-700 mt-2 text-3xl font-bold">Owed ${(totalOwed - totalToPay).toFixed(2)}</div>
+                )}
                 <div className="text-red-700 font-bold text-lg self-start mt-4 ml-4 mb-2">Bills To Pay</div>
                 <div className="flex flex-row self-start mt-1 w-full">
-                    {/* TODO: Change subBills below to be recent transactions (that include master bills*/}
                     {subBills.length === 0 ? (
                         <p className="mt-2 ml-4 text-gray-700 font-bold">No Bills to Pay</p>
                     ):(
                         <>
-                            {subBills.map((subBill, index) => (
+                            {subBills.slice(0, 3).map((subBill, index) => (
                                 <div key={index} className="rounded-lg shadow-lg w-1/3 border mr-2">
                                     <div className="px-3 py-2">
                                         <div className="font-bold text-lg mb-1">{subBill.masterbill_name}</div>
                                         <p className="text-gray-500 text-base mb-1">you owe {subBill.creator} ${subBill.total}</p>
-                                        <p className="text-gray-500 text-base">{getBillDate(subBill.creation_time['$date'])}</p>
+                                        <p className="text-gray-500 text-base">{getSubBillDate(subBill.creation_time['$date'])}</p>
                                     </div>
                                 </div>
                             ))}
@@ -167,17 +177,16 @@ const HomePage = () => {
                 </div>
                 <div className="text-green-700 font-bold text-lg self-start mt-6 ml-4 mb-2">Payments To Receive</div>
                 <div className="flex flex-row self-start mt-1 w-full">
-                    {/* TODO: Change subBills below to be recent transactions (that include master bills*/}
                     {masterBills.length === 0 ? (
                         <p className="mt-2 ml-4 text-gray-700 font-bold">No Payments to Receive</p>
                     ):(
                         <>
-                            {masterBills.map((masterBill, index) => (
+                            {masterBills.slice(0, 3).map((masterBill, index) => (
                                 <div key={index} className="rounded-lg shadow-lg w-1/3 border">
                                     <div className="px-3 py-2">
                                         <div className="font-bold text-lg mb-1">{masterBill.masterBillName}</div>
-                                        <p className="text-gray-500 text-base mb-1">you are owed {calculateBillsOwed(masterBill)}</p>
-                                        {/* <p className="text-gray-500 text-base">{getBillDate(masterBill.creation_time['$date'])}</p> */}
+                                        <p className="text-gray-500 text-base mb-1">you are owed ${calculateBillsOwed(masterBill)}</p>
+                                        <p className="text-gray-500 text-base">{getMasterBillDate(masterBill.createAt)}</p>
                                     </div>
                                 </div>
                             ))}
@@ -187,7 +196,7 @@ const HomePage = () => {
             </div>
 
             <div className="flex flex-col items-center mb-2">
-                <div className="font-bold text-lg self-start ml-4">Your Pinned Contacts</div>
+                <div className="font-bold text-yellow-500 text-lg self-start ml-4">Pinned Contacts</div>
             </div>
 
             <div className="ml-4 mr-4">
