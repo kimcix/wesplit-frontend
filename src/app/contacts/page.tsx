@@ -37,6 +37,7 @@ const ContactsPage = () => {
     const [user_list, setUserList] = useState('');
     const [groupName, setGroupName] = useState('');
     const [updateTriggerForAddContact, setUpdateTriggerForAddContact] = useState(false);
+    const [message, setMessage] = useState('');
 
     useEffect(() => {
         fetchContacts();
@@ -52,6 +53,7 @@ const ContactsPage = () => {
     };
 
     const handleUsernameChange = (index: number, value: string) => {
+        setMessage('');
         const updatedUsernames = usernames.map((username, i) => i === index ? value : username);
         setUsernames(updatedUsernames);
     };
@@ -99,7 +101,7 @@ const ContactsPage = () => {
 
             // Check if all usernames are valid
             if (validUsernames.length !== usernames.length) {
-                alert('One or more usernames are invalid'); 
+                setMessage('One or more usernames are invalid');  
                 return;
             }
 
@@ -133,11 +135,10 @@ const ContactsPage = () => {
                 setContacts([...contacts, { ...newContact, type: contactType }]);
                 setShowModal(false);
                 setUsernames(['']); // Reset usernames for the next entry
-                alert('Contact added successfully!');
                 setUpdateTriggerForAddContact(!updateTriggerForAddContact);
               } else {
                 const error = await response.json();
-                alert(`Failed to add contact: ${error.msg}`);
+                setMessage(`Failed to add contact: ${error.msg}`);
               }
             } catch (error) {
               // Handle network errors
@@ -148,7 +149,7 @@ const ContactsPage = () => {
             const profile = await fetchUserProfile(usernames[0]);
             //console.log("User profile: ", JSON.stringify(profile));
             if (!profile || profile.error) {
-                alert('Username is invalid');
+                setMessage('Username is invalid');
                 return;
             }
             
@@ -179,11 +180,10 @@ const ContactsPage = () => {
                     setContacts([...contacts, { ...newContact, type: contactType }]);
                     setShowModal(false);
                     setUsernames(['']); // Reset usernames for the next entry
-                    alert('Contact added successfully!');
                     setUpdateTriggerForAddContact(!updateTriggerForAddContact);
                   } else {
                     const error = await response.json();
-                    alert(`Failed to add contact: ${error.msg}`);
+                    setMessage(`Failed to add contact: ${error.msg}`);
                   }
                 } catch (error) {
                   // Handle network errors
@@ -264,6 +264,9 @@ const ContactsPage = () => {
                             <button onClick={() => setShowModal(false)} className="p-2 bg-red-500 text-white rounded ml-2">
                                 Close
                             </button>
+                            {message && (
+                                <div className="mb-4 text-red-500">{message}</div>
+                            )}
                         </div>
                     </div>
                 )}
