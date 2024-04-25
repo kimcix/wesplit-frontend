@@ -49,8 +49,10 @@ export default function SplitAnalysis({
         console.log(`Fetch error: ${e}`)
       })
 
-    const result_json = JSON.parse(result)
-    setData(result_json)
+    const result_json = JSON.parse(result);
+    const filtered_result = result_json.filter((item: any) => item.creator !== username);
+    console.log("filtered_result: ", filtered_result);
+    setData(filtered_result)
   };
 
   const openModal = (key: number) => {
