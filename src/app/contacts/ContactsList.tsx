@@ -221,7 +221,7 @@ const ContactsList: React.FC<Props> = ({ searchTerm, updateAddTrigger}) => {
                     <ul>
                     <h3 className="font-bold text-l py-2">Individual Contacts</h3>
                         {group.individual_contacts.map(contact => (
-                            <li key={contact.id} className={`flex justify-between items-center p-2 border-b ${contact.is_pinned ? 'bg-yellow-100' : ''}`}>
+                            <li key={contact.id} className={`flex justify-between items-center p-2 border-b ${contact.is_pinned ? 'bg-yellow-100' : 'bg-gray-100'}`}>
                                 <div>
                                     <p className="font-semibold">{contact.name}</p>
                                     <p className="text-sm text-gray-500">{contact.email}</p>
