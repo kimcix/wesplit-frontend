@@ -2,7 +2,7 @@
 import { ChangeEvent, ChangeEventHandler, useEffect, useState  } from 'react';
 import BottomNavBar from '../components/bottomNavigationBar'
 import TopBar from '../components/topBar'
-import { contactAPIPrefix } from '../components/apiPrefix';
+import { contactAPIPrefix, userManagementAPIPrefix } from '../components/apiPrefix';
 import ContactsList from './ContactsList'; 
 
 interface Contact {
@@ -35,7 +35,6 @@ const ContactsPage = () => {
     const [pinnedCount, setPinnedCount] = useState(0);
     const [groupId, setGroupId] = useState('');
     const [user_list, setUserList] = useState('');
-    const [message, setMessage] = useState('');
     const [groupName, setGroupName] = useState('');
     const [updateTriggerForAddContact, setUpdateTriggerForAddContact] = useState(false);
 
@@ -81,13 +80,35 @@ const ContactsPage = () => {
         const currentUser = localStorage.getItem('username'); // Retrieve the currently logged-in user's username
         console.log("usernames are " + usernames);
         const url = `${contactAPIPrefix}/${contactType === 'group' ? 'group_contact' : 'individual_contact'}`;
+
+        // Function to fetch user profiles
+        const fetchUserProfile = async (username: string) => {
+            const response = await fetch(`${userManagementAPIPrefix}/profile/${username}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            return response.json();
+        };
+
         if (contactType === 'group') {
+            // Fetch and verify all user profiles
+            const profiles = await Promise.all(usernames.map(username => fetchUserProfile(username)));
+            const validUsernames = profiles.filter(profile => profile && !profile.error);
+
+            // Check if all usernames are valid
+            if (validUsernames.length !== usernames.length) {
+                alert('One or more usernames are invalid'); 
+                return;
+            }
+
             // Build the members array with the required fields for each member
-            const members = usernames.map(username => ({
-              username: username,
-              name: username, // Assuming the name is the same as the username, change as needed
-              email: `${username}@example.com`, // Modify as per your logic for deriving emails
-              is_pinned: false
+            const members = validUsernames.map(profile => ({
+                username: profile.username,
+                name: profile.username, // Assuming the name is the same as the username, change as needed
+                email: profile.email || `${profile.username}@example.com`, // Use profile email or default
+                is_pinned: false
             }));
         
             const body = {
@@ -112,17 +133,24 @@ const ContactsPage = () => {
                 setContacts([...contacts, { ...newContact, type: contactType }]);
                 setShowModal(false);
                 setUsernames(['']); // Reset usernames for the next entry
-                setMessage('Contact added successfully!');
+                alert('Contact added successfully!');
                 setUpdateTriggerForAddContact(!updateTriggerForAddContact);
               } else {
                 const error = await response.json();
-                setMessage(`Failed to add contact: ${error.msg}`);
+                alert(`Failed to add contact: ${error.msg}`);
               }
             } catch (error) {
               // Handle network errors
             }
         
         } else {
+            // For individual contact, verify the main user's profile (if necessary)
+            const profile = await fetchUserProfile(usernames[0]);
+            if (!profile || profile.error) {
+                alert('Username is invalid');
+                return;
+            }
+
             const body = {
                 username: currentUser,
                 name: usernames.join(', '),
@@ -144,11 +172,11 @@ const ContactsPage = () => {
                     setContacts([...contacts, { ...newContact, type: contactType }]);
                     setShowModal(false);
                     setUsernames(['']); // Reset usernames for the next entry
-                    setMessage('Contact added successfully!');
+                    alert('Contact added successfully!');
                     setUpdateTriggerForAddContact(!updateTriggerForAddContact);
                   } else {
                     const error = await response.json();
-                    setMessage(`Failed to add contact: ${error.msg}`);
+                    alert(`Failed to add contact: ${error.msg}`);
                   }
                 } catch (error) {
                   // Handle network errors
@@ -171,7 +199,6 @@ const ContactsPage = () => {
                 <button className="mb-4 p-2 bg-blue-500 text-white rounded" onClick={() => setShowModal(true)}>
                     Add New Contact
                 </button>
-                {message && <div className="alert">{message}</div>}
                 {showModal && (
                     <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
                         <div className="bg-white p-4 rounded">
