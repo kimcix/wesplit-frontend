@@ -200,7 +200,7 @@ const ContactsPage = () => {
             <div className="flex flex-col p-4 pt-20 mb-24">
                 <input
                     type="text"
-                    placeholder="Search by username or group ID"
+                    placeholder="Search by username"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="border p-2 mb-4"

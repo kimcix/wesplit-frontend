@@ -47,13 +47,6 @@ const ContactsList: React.FC<Props> = ({ searchTerm, updateAddTrigger}) => {
     });
 
     const [updateTrigger, setUpdateTrigger] = useState(false);
-    
-    // Sorting the sections so that "pinned" comes before "others"
-    // const sortedEntries = Object.entries(contacts).sort(([key1], [key2]) => {
-    //     if (key1 === 'pinned') return -1;
-    //     if (key2 === 'pinned') return 1;
-    //     return 0;
-    // });
 
     const getUsername = () => localStorage.getItem('username') || "defaultUsername";
 
@@ -120,13 +113,12 @@ const ContactsList: React.FC<Props> = ({ searchTerm, updateAddTrigger}) => {
                     return updatedContacts;
                 });
                 setUpdateTrigger(!updateTrigger);
-                console.log(data.msg); // Display a success message
+                console.log(data.msg);
             } else {
                 throw new Error(data.msg);
             }
         } catch (error) {
             console.error('Error toggling pin status:', error);
-            // Handle errors, e.g., updating a state variable to show an error message to the user
         }
     };
 
