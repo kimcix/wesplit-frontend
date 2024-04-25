@@ -37,10 +37,11 @@ const ContactsPage = () => {
     const [user_list, setUserList] = useState('');
     const [message, setMessage] = useState('');
     const [groupName, setGroupName] = useState('');
+    const [updateTrigger, setUpdateTrigger] = useState(false);
 
     useEffect(() => {
         fetchContacts();
-    }, [username]);
+    }, [username, updateTrigger]);
 
 
     const handleAddUserField = () => {
@@ -112,6 +113,7 @@ const ContactsPage = () => {
                 setShowModal(false);
                 setUsernames(['']); // Reset usernames for the next entry
                 setMessage('Contact added successfully!');
+                setUpdateTrigger(!updateTrigger);
               } else {
                 const error = await response.json();
                 setMessage(`Failed to add contact: ${error.msg}`);
@@ -143,6 +145,7 @@ const ContactsPage = () => {
                     setShowModal(false);
                     setUsernames(['']); // Reset usernames for the next entry
                     setMessage('Contact added successfully!');
+                    setUpdateTrigger(!updateTrigger);
                   } else {
                     const error = await response.json();
                     setMessage(`Failed to add contact: ${error.msg}`);

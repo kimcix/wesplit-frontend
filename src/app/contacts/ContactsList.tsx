@@ -44,6 +44,8 @@ const ContactsList: React.FC<Props> = ({ searchTerm }) => {
             individual_contacts: [],
         }
     });
+
+    const [updateTrigger, setUpdateTrigger] = useState(false);
     
     // Sorting the sections so that "pinned" comes before "others"
     // const sortedEntries = Object.entries(contacts).sort(([key1], [key2]) => {
@@ -75,7 +77,7 @@ const ContactsList: React.FC<Props> = ({ searchTerm }) => {
         };
 
         fetchContacts();
-    }, [username]);
+    }, [username, updateTrigger]);
 
     const handlePinContact = async (name: string, contactName: string, contactType: 'individual' | 'group') => {
         const username = localStorage.getItem('username'); // Retrieve the username from localStorage
@@ -116,6 +118,7 @@ const ContactsList: React.FC<Props> = ({ searchTerm }) => {
     
                     return updatedContacts;
                 });
+                setUpdateTrigger(!updateTrigger);
                 console.log(data.msg); // Display a success message
             } else {
                 throw new Error(data.msg);
@@ -139,6 +142,7 @@ const ContactsList: React.FC<Props> = ({ searchTerm }) => {
           if (response.ok) {
             const data = await response.json();
             console.log(data.msg);
+            setUpdateTrigger(!updateTrigger);
           } else {
             const errorData = await response.json();
             console.error(errorData.msg);
