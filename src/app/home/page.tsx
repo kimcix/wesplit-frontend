@@ -165,7 +165,7 @@ const HomePage = () => {
                         <p className="mt-2 ml-4 text-gray-700 font-bold">No Bills to Pay</p>
                     ):(
                         <>
-                            {subBills.map((subBill, index) => (
+                            {subBills.slice(0, 3).map((subBill, index) => (
                                 <div key={index} className="rounded-lg shadow-lg w-1/3 border mr-2">
                                     <div className="px-3 py-2">
                                         <div className="font-bold text-lg mb-1">{subBill.masterbill_name}</div>
@@ -184,7 +184,7 @@ const HomePage = () => {
                         <p className="mt-2 ml-4 text-gray-700 font-bold">No Payments to Receive</p>
                     ):(
                         <>
-                            {masterBills.map((masterBill, index) => (
+                            {masterBills.slice(0, 3).map((masterBill, index) => (
                                 <div key={index} className="rounded-lg shadow-lg w-1/3 border">
                                     <div className="px-3 py-2">
                                         <div className="font-bold text-lg mb-1">{masterBill.masterBillName}</div>
