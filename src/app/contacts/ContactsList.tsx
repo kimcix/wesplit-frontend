@@ -215,11 +215,11 @@ const ContactsList: React.FC<Props> = ({ searchTerm, updateAddTrigger}) => {
 
     return (
         <div>
-            <p>Username: {username}</p>
             {sortedEntries.map(([key, group]) => (
                 <div key={key}>
                     <h2 className="font-bold text-xl py-2">{key.charAt(0).toUpperCase() + key.slice(1)} Contacts</h2>
                     <ul>
+                    <h3 className="font-bold text-l py-2">Individual Contacts</h3>
                         {group.individual_contacts.map(contact => (
                             <li key={contact.id} className={`flex justify-between items-center p-2 border-b ${contact.is_pinned ? 'bg-yellow-100' : ''}`}>
                                 <div>
@@ -244,27 +244,30 @@ const ContactsList: React.FC<Props> = ({ searchTerm, updateAddTrigger}) => {
                             </li>
                         ))}
                     </ul>
+                    <h3 className="font-bold text-l py-2">Group Contacts</h3>
                     {group.group_contacts && group.group_contacts.map(groupContact => (
                         <div 
                             key={groupContact._id}
-                            className={`${groupContact.is_pinned ? 'bg-blue-100' : ''}`} // Apply blue background if pinned
+                            className={`${groupContact.is_pinned ? 'bg-blue-100' : 'bg-gray-100'}`} // Apply blue background if pinned
                         >
+                        <div className={`${groupContact.is_pinned ? 'bg-blue-200' : 'bg-gray-200'}`}>
                             <div className="flex justify-between items-center">
                                 <h3 className="font-semibold">Group: {groupContact.name}</h3>
                                 <button 
                                     onClick={() => handlePinContact(getUsername(), groupContact.name, 'group')}
-                                    className="p-2 bg-yellow-500 text-white rounded"
+                                    className="p-2 ml-2 bg-yellow-500 text-white rounded"
                                 >
                                     {groupContact.is_pinned ? 'Unpin Group' : 'Pin Group'}
                                 </button>
                                 <button 
                                         onClick={() => handleDeleteGroupContact(groupContact.group_id)}
-                                        className="p-2 bg-gray-400 text-white rounded"
+                                        className="p-2 mr-1 bg-gray-400 text-white rounded"
                                     >
                                         Delete Group
                                 </button>
                             </div>
                             <p className="text-sm text-gray-500">ID: {groupContact.group_id}</p>
+                        </div>
                             <ul>
                                 {groupContact.members.map(member => (
                                     <li key={`${groupContact._id}-${member.id}`} className="flex justify-between items-center p-2 border-b">
