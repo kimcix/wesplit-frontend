@@ -110,7 +110,8 @@ const ContactsPage = () => {
                 username: profile.username,
                 name: profile.username, // Assuming the name is the same as the username, change as needed
                 email: profile.email || `${profile.username}@example.com`, // Use profile email or default
-                is_pinned: false
+                is_pinned: false,
+                id: profile.friend_id
             }));
         
             const body = {
