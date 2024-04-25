@@ -1,4 +1,6 @@
-import React from 'react';
+'use client'
+
+import React, { useEffect, useState } from 'react';
 
 interface SubBillProps {
   data: any
@@ -6,30 +8,39 @@ interface SubBillProps {
 
 
 const SubBill: React.FC<SubBillProps> = ({ data }) => {
-    return (
-      <div className="w-screen flex">
-        <div className="w-screen border-2 border-grey-400 border-solid m-1 bg-white rounded-b lg:rounded-b-none lg:rounded-r p-4 flex flex-col justify-between leading-normal">
-          <div className="mb-8">
-            <p className="text-sm text-gray-600 flex items-center">
-              Id: {data["_id"]["$oid"]}
-            </p>
-            <div className="text-gray-900 font-bold text-xl mb-2">${data['total'].toFixed(2)}</div>
-            <p>Item list:</p>
-            <div className="border-y">
-              {data['item_list'].map((item: string, index: number) => (
-                <p key={index} className="m-2 text-gray-700 text-base">{item}</p>
-              ))}
-            </div>
+  const [localData, setLocalData] = useState<any>(data);
+
+  useEffect(() => {
+    setLocalData(data);
+  }, [data]);
+
+  return (
+    <div className="w-screen flex">
+      <div className="group w-screen border-2 border-grey-400 border-solid mx-4 my-2 p-8 bg-white rounded-md p-4 flex flex-col justify-between leading-normal hover:bg-slate-200">
+        <div className="mb-8">
+          <p className="text-sm text-gray-600 flex items-center">
+            Id: {localData["_id"]["$oid"]}
+          </p>
+          <span className="invisible rounded-md bg-sky-200 group-hover:visible">
+            Edit Options
+          </span>
+          <div className="text-gray-900 font-bold text-xl mb-2">${localData['total'].toFixed(2)}</div>
+          <p>Item list:</p>
+          <div className="border-y">
+            {localData['item_list'].map((item: string, index: number) => (
+              <p key={index} className="m-2 text-gray-700 text-base">{item}</p>
+            ))}
           </div>
-          <div className="flex items-center">
-            <div className="text-sm">
-              <p className="text-gray-900 leading-none">User: {data['user_name']}</p>
-              <p className="text-gray-600">Creation_time: {data['creation_time']['$date']}</p>
-            </div>
+        </div>
+        <div className="flex flex-col justify-center">
+          <div className="text-sm">
+            <p className="text-gray-900 leading-none">User: {localData['user_name']}</p>
+            <p className="text-gray-600 right-0">Creation_time: {localData['creation_time']['$date']}</p>
           </div>
         </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
   
   export default SubBill;

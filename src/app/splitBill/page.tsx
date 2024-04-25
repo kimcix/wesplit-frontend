@@ -6,52 +6,6 @@ import { useRouter } from 'next/navigation';
 import SocketClient from '../components/socket';
 import Popup from '../components/popupWindow';
 
-// const my_id = 0;
-const contacts = {
-    pinned:{
-        individual: [
-            { id: 1, name: 'Alice' },
-            { id: 2, name: 'Bob' },
-            { id: 3, name: 'Charlie' }
-        ],
-        group: [
-            { id: 4, name: 'Group 1', members: [
-                { id: 5, name: 'Dave' },
-                { id: 6, name: 'Eve' }
-            ]},
-            { id: 7, name: 'Group 2', members: [
-                { id: 8, name: 'Frank' },
-                { id: 9, name: 'Grace' }
-            ]},
-            { id: 10, name: 'Group 3', members: [
-                { id: 11, name: 'Heidi' },
-                { id: 12, name: 'Ivan' }
-            ]}
-        ]
-    },
-    others:{    
-        individual: [
-            { id: 1, name: 'Alice' },
-            { id: 2, name: 'Bob' },
-            { id: 3, name: 'Charlie' }
-        ],
-        group: [
-            { id: 4, name: 'Group 1', members: [
-                { id: 5, name: 'Dave' },
-                { id: 6, name: 'Eve' }
-            ]},
-            { id: 7, name: 'Group 2', members: [
-                { id: 8, name: 'Frank' },
-                { id: 9, name: 'Grace' }
-            ]},
-            { id: 10, name: 'Group 3', members: [
-                { id: 11, name: 'Heidi' },
-                { id: 12, name: 'Ivan' }
-            ]}
-        ]
-    } 
-} ;
-
 const SplitBill = () => {
     const username = localStorage.getItem('username');
     const my_name = !username? ' ' : username;
@@ -65,7 +19,31 @@ const SplitBill = () => {
     const [inputMethod, setInputMethod] = useState('total');
     const [splitMethod, setSplitMethod] = useState('equal');
     const [totalAmount, setTotalAmount] = useState(0);
+
+    // const [contacts, setContacts] = useState<{
+    //     pinned:{
+    //         individual_contacts: { id: Number, name: string }[],
+    //         group_contacts:{ group_id: number, name: string, members: { id: Number, name: string }[]}[]
+    //     },
+    //     others:{    
+    //         individual: { name: string }[],
+    //         group:{ id: number, name: string, members: { id: Number, name: string }[]}[]
+    //     } 
+    // }>({pinned:{
+    //         individual: [],
+    //         group:[]
+    //     },
+    //     others:{    
+    //         individual: [],
+    //         group:[]
+    //     } 
+    // });
+
+    const [contacts, setContacts] = useState<any[]>([])
+
     const [assignedTotal, setAssignedTotal] = useState(0);
+    const [contactLoaded, setContactLoaded] = useState(false);
+
     const [showContacts, setShowContacts] = useState(true);
     const [notification, setNotification] = useState<{ title: string, body: string } | null>(null);
 
@@ -99,9 +77,9 @@ const SplitBill = () => {
     };
 
     const addGroup = (type: string, groupId: number) => {
-        const group = contacts[type as keyof typeof contacts].group.find(group => group.id === groupId);
+        const group = contacts[type as keyof typeof contacts].group_contacts.find((group : any) => group.group_id === groupId);
         if (group) {
-            group.members.forEach(member => addUser(member.name));
+            group.members.forEach((member : any) => addUser(member.name));
         }
     };
 
@@ -220,6 +198,24 @@ const SplitBill = () => {
         console.log(selectedUsers)
     }
 
+    const getContacts = async () => {      
+        // const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
+        const response = await fetch('http://localhost:5002/contacts/all/' + my_name, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // 'Authorization': `Bearer ${token}` // Pass the authentication token
+          }
+        });
+        if (!response.ok) {
+            throw new Error('Failed to retrieve user contacts');
+        }
+        const data = await response.json();
+
+        setContacts(data)
+        return data;
+    };
+
     const createSplitBill = async () => {
         if (splitMethod === 'equal') {
             setParticipantsValue(parseFloat((totalAmount / selectedUsers.length).toFixed(2)));
@@ -264,13 +260,17 @@ const SplitBill = () => {
             }
         });
 
-        validateSplit();
+        getContacts();
 
         // Any clean-up code can go here
         return () => {
             SocketClient.close();
         };
-    })
+    }, [])
+
+    useEffect(() => {
+        validateSplit();
+    }, [items, selectedUsers, totalAmount, inputMethod, splitMethod])
 
   return (
     <div>
@@ -442,15 +442,15 @@ const SplitBill = () => {
                 {Object.keys(contacts).map(category => (
                     <div key={category}>
                         <h2>{category}</h2>
-                        {contacts[category as keyof typeof contacts].group.map(group => (
-                            <table key={group.id}>
+                        {contacts[category as keyof typeof contacts].group_contacts.map((group : any) => (
+                            <table key={group.group_id}>
                                 <tbody>
                                     <tr>
                                         <td style={{width : '100%'}}>{group.name}</td>
-                                        <td><button onClick={() => addGroup(category, group.id)}>Add</button></td>
+                                        <td><button onClick={() => addGroup(category, group.group_id)}>Add</button></td>
                                     </tr>
-                                    {group.members.map(member => (
-                                        <tr key={member.id}>
+                                    {group.members.map((member : any) => (
+                                        <tr key={member.name}>
                                             <td>---{member.name}</td>
                                             <td><button onClick={() => addUser(member.name)}>Add</button></td>
                                         </tr>
@@ -458,18 +458,18 @@ const SplitBill = () => {
                                 </tbody>
                             </table>
                         ))}
-                        {contacts[category as keyof typeof contacts].individual.length > 0 && (
+                        {/* {contacts[category as keyof typeof contacts].individual.length > 0 && ( */}
                             <table>
                                 <tbody>
-                                    {contacts[category as keyof typeof contacts].individual.map(individual => (
-                                        <tr key={individual.id}>
+                                    {contacts[category as keyof typeof contacts].individual_contacts.map((individual : any) => (
+                                        <tr key={individual.name}>
                                             <td style={{width : '100%'}}>{individual.name}</td>
                                             <td><button onClick={() => addUser(individual.name)}>Add</button></td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
-                        )}
+                        {/* )} */}
                     </div>
                 ))}
             </div>}

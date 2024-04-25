@@ -37,10 +37,11 @@ const ContactsPage = () => {
     const [user_list, setUserList] = useState('');
     const [message, setMessage] = useState('');
     const [groupName, setGroupName] = useState('');
+    const [updateTriggerForAddContact, setUpdateTriggerForAddContact] = useState(false);
 
     useEffect(() => {
         fetchContacts();
-    }, [username]);
+    }, [username, updateTriggerForAddContact]);
 
 
     const handleAddUserField = () => {
@@ -64,7 +65,6 @@ const ContactsPage = () => {
                   'Content-Type': 'application/json'
                 },
               });
-            console.log(contactAPIPrefix + " , " + username)
             const data = await response.json();
             console.log("all contact data: ", data);
             if (response.ok) {
@@ -113,6 +113,7 @@ const ContactsPage = () => {
                 setShowModal(false);
                 setUsernames(['']); // Reset usernames for the next entry
                 setMessage('Contact added successfully!');
+                setUpdateTriggerForAddContact(!updateTriggerForAddContact);
               } else {
                 const error = await response.json();
                 setMessage(`Failed to add contact: ${error.msg}`);
@@ -121,11 +122,12 @@ const ContactsPage = () => {
               // Handle network errors
             }
         
-          } else {
+        } else {
             const body = {
                 username: currentUser,
                 name: usernames.join(', '),
                 email: usernames[0] + '@example.com',
+                id: '1',
                 is_pinned: false
             };
             try {
@@ -133,7 +135,6 @@ const ContactsPage = () => {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
-                      // Include other headers such as authorization if required
                     },
                     body: JSON.stringify(body)
                   });
@@ -144,6 +145,7 @@ const ContactsPage = () => {
                     setShowModal(false);
                     setUsernames(['']); // Reset usernames for the next entry
                     setMessage('Contact added successfully!');
+                    setUpdateTriggerForAddContact(!updateTriggerForAddContact);
                   } else {
                     const error = await response.json();
                     setMessage(`Failed to add contact: ${error.msg}`);
@@ -232,7 +234,7 @@ const ContactsPage = () => {
                     </div>
                 )}
                 <div>
-                    <ContactsList searchTerm={searchTerm} />
+                    <ContactsList searchTerm={searchTerm} updateAddTrigger={updateTriggerForAddContact}/>
                 </div>
             </div>
             <BottomNavBar />
