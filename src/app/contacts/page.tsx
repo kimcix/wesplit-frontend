@@ -232,7 +232,7 @@ const ContactsPage = () => {
                     </div>
                 )}
                 <div>
-                    <ContactsList />
+                    <ContactsList searchTerm={searchTerm} />
                 </div>
             </div>
             <BottomNavBar />
