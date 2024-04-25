@@ -35,6 +35,11 @@ export default function Register() {
     }
   };
 
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    router.push('/login');
+  }
+
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <h1 className="text-4xl font-bold mb-4">Register</h1>
@@ -52,7 +57,10 @@ export default function Register() {
           <label>Email</label>
           <input className="w-full px-3 py-2 border rounded-md" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
-        <button className="w-full px-4 py-2 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600 mt-4" type="submit">Register</button>
+        <div className="flex justify-center space-x-4">
+          <button className="flex-grow px-4 py-2 bg-yellow-400 text-white rounded-md transition duration-300 hover:bg-yellow-600 mt-4" type="submit">Register</button>
+          <button type="submit" onClick={handleLoginSubmit} className="flex-grow px-4 py-2 mt-4 bg-gray-400 text-white rounded-md transition duration-300 hover:bg-yellow-600">Login</button>
+        </div>
       </form>
     </div>
   );
