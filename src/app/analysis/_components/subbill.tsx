@@ -32,12 +32,6 @@ const SubBill: React.FC<SubBillProps> = ({ data }) => {
             ))}
           </div>
         </div>
-        <div>
-          {localData['analytics']['paid'] ? 
-            <span className='bg-green-400'>Paid</span> :
-            <span className='bg-red-700'>Unpaid</span>
-          }
-        </div>
         <div className="flex flex-col justify-center">
           <div className="text-sm">
             <p className="text-gray-900 leading-none">User: {localData['user_name']}</p>
