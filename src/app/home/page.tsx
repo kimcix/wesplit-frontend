@@ -82,7 +82,7 @@ const HomePage = () => {
             }
             const res = await response.json();
             const raw = JSON.parse(res);
-            const data = raw.filter((item: any) => item.creator !== username);
+            const data = raw.filter((item: any) => item.creator !== username && !item.analytics['paid']);
             setSubBills(data);
             let toPay = 0;
             data.forEach((subBill: any) => {
