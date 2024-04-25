@@ -19,7 +19,7 @@ const HomePage = () => {
     const [contacts, setContacts] = useState([]);
     const [subBills, setSubBills] = useState<any[]>([]); // JSON objects for SubBills from db
     const [masterBills, setMasterBills] = useState<any[]>([]); // JSON objects for masterBills from db
-
+    const [totalBalance, setTotalBalance] = useState<number>(0); // JSON objects for SubBills from db
 
     const getCurrentDate = (): string => {
         const currentDate = new Date();
@@ -33,6 +33,16 @@ const HomePage = () => {
         const datetime = (new Date(billDate)).toLocaleString();
         const date = datetime.split(',')[0];
         return date;
+    }
+
+    const calculateBillsOwed = (masterBill: any): number => {
+        let res = 0;
+        masterBill.assignment.forEach((payer: any) => {
+            if (payer.name !== username) {
+                res += payer.value;
+            }
+        })
+        return res;
     }
 
     useEffect(() => {
@@ -63,10 +73,16 @@ const HomePage = () => {
             const res = await response.json();
             const data = JSON.parse(res);
             setSubBills(data);
+            let newBalance = totalBalance;
+            data.forEach((subBill: any) => {
+                newBalance -= subBill.total;
+            })
+            setTotalBalance(newBalance);
             console.log('subBill data: ', data);
             console.log('getCurrentDate: ', getCurrentDate())
         };
         // Fetch user master bills (bills others owe he/she)
+        // TODO: Change the user below
         // const masterBillsAPIRequestUrl = billSplittingAPIPrefix + '/splitBill?creator=' + username;
         const masterBillsAPIRequestUrl = billSplittingAPIPrefix + '/splitBill?creator=leoren';
         const fetchMasterBills = async () => {
@@ -82,6 +98,11 @@ const HomePage = () => {
             const data = await response.json();
             console.log('masterBill data: ', data);
             setMasterBills(data);
+            let newBalance = totalBalance;
+            data.forEach((masterBill: any) => {
+                newBalance += calculateBillsOwed(masterBill);
+            })
+            setTotalBalance(newBalance);
         };
         // Fetch user contacts
         const contactsAPIRequestUrl = contactAPIPrefix + `/contacts/all/${username}`;
@@ -124,7 +145,7 @@ const HomePage = () => {
             <div className="flex flex-col items-center mb-8">
                 <div className="mt-20 text-lg font-bold">Total Balance</div>
                 {/* TODO: Replace with real data */}
-                <div className="text-red-700 mt-2 text-3xl font-bold">Owed $230</div>  
+                <div className="text-red-700 mt-2 text-3xl font-bold">Owed ${totalBalance}</div>  
                 <div className="text-red-700 font-bold text-lg self-start mt-4 ml-4 mb-2">Bills To Pay</div>
                 <div className="flex flex-row self-start mt-1 w-full">
                     {/* TODO: Change subBills below to be recent transactions (that include master bills*/}
@@ -155,7 +176,7 @@ const HomePage = () => {
                                 <div key={index} className="rounded-lg shadow-lg w-1/3 border">
                                     <div className="px-3 py-2">
                                         <div className="font-bold text-lg mb-1">{masterBill.masterBillName}</div>
-                                        <p className="text-gray-500 text-base mb-1">you are owed {masterBill.masterBillTotal}</p>
+                                        <p className="text-gray-500 text-base mb-1">you are owed {calculateBillsOwed(masterBill)}</p>
                                         {/* <p className="text-gray-500 text-base">{getBillDate(masterBill.creation_time['$date'])}</p> */}
                                     </div>
                                 </div>
