@@ -16,10 +16,10 @@ const SubBill: React.FC<SubBillProps> = ({ data }) => {
 
   return (
     <div className="w-screen flex">
-      <div className="group w-screen border-2 border-grey-400 border-solid mx-4 my-2 p-8 bg-white rounded-md p-4 flex flex-col justify-between leading-normal hover:bg-slate-200">
+      <div className={`group w-screen border-2 ${localData["analytics"]["paid"] ? 'bg-green-100' : 'bg-red-100'} border-grey-400 border-solid mx-4 my-2 p-8 bg-white rounded-md p-4 flex flex-col justify-between leading-normal hover:bg-slate-200`}>
         <div className="mb-8">
           <p className="text-sm text-gray-600 flex items-center">
-            Id: {localData["_id"]["$oid"]}
+            Bill Name: {localData["masterbill_name"]}
           </p>
           <span className="invisible rounded-md bg-sky-200 group-hover:visible">
             Edit Options
@@ -34,8 +34,8 @@ const SubBill: React.FC<SubBillProps> = ({ data }) => {
         </div>
         <div className="flex flex-col justify-center">
           <div className="text-sm">
-            <p className="text-gray-900 leading-none">User: {localData['user_name']}</p>
-            <p className="text-gray-600 right-0">Creation_time: {localData['creation_time']['$date']}</p>
+            <p className="text-gray-900 leading-none">Owener: {localData['creator']}</p>
+            <p className="text-gray-600 right-0">Creation Time: {(new Date(localData['creation_time']['$date'])).toLocaleDateString()}</p>
           </div>
         </div>
       </div>

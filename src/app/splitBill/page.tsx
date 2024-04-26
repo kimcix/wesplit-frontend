@@ -484,7 +484,7 @@ const SplitBill = () => {
                 </div>
             }            
 
-            <button className='mt-2 border border-gray-300 rounded-md' disabled={!configureState || totalAmount === 0} onClick={createSplitBill}>Split It!</button>
+            <button className={`mt-2 border border-gray-300 rounded-md ${(!configureState || totalAmount === 0) ? 'bg-gray-300' : ''}`} disabled={!configureState || totalAmount === 0} onClick={createSplitBill}>Split It!</button>
 
         </div>
         <div className='mb-20'></div>
