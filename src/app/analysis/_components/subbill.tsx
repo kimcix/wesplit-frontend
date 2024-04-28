@@ -21,7 +21,7 @@ const SubBill: React.FC<SubBillProps> = ({ data }) => {
           <p className="text-sm text-gray-600 flex items-center">
             Bill Name: {localData["masterbill_name"]}
           </p>
-          <span className="invisible rounded-md bg-sky-200 group-hover:visible">
+          <span className="invisible block w-100 rounded-md bg-sky-200 group-hover:visible">
             Edit Options
           </span>
           <div className="text-gray-900 font-bold text-xl mb-2">${localData['total'].toFixed(2)}</div>
@@ -31,11 +31,18 @@ const SubBill: React.FC<SubBillProps> = ({ data }) => {
               <p key={index} className="m-2 text-gray-700 text-base">{item}</p>
             ))}
           </div>
-        </div>
-        <div className="flex flex-col justify-center">
-          <div className="text-sm">
-            <p className="text-gray-900 leading-none">Owener: {localData['creator']}</p>
+
+          <div className="flex flex-col justify-center">
+            <div className="text-sm">
+            <p className="text-gray-900 leading-none">Owner: {localData['creator']}</p>
             <p className="text-gray-600 right-0">Creation Time: {(new Date(localData['creation_time']['$date'])).toLocaleDateString()}</p>
+            </div>
+            <div>
+            {localData['analytics']['paid'] ? 
+              <span className='block w-100 rounded-md bg-green-400'>Paid</span> :
+              <span className='block w-100 rounded-md bg-red-400'>Unpaid</span>}
+            </div>
+
           </div>
         </div>
       </div>

@@ -21,12 +21,15 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onSubmit }) => {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const formData = new FormData(event.currentTarget)
-    onSubmit(startDate, endDate)
+    
+    // Decide whether or not to pitch an SSE endpoint
+    const fetchLatest = (currentDate === endDate);
+    console.log(`Query with ${startDate}, ${endDate}, ${fetchLatest}`)
+    onSubmit(startDate, endDate, fetchLatest);
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-row flex-wrap justify-center">
+    <form onSubmit={handleSubmit} className="pb-2 flex flex-row flex-wrap justify-center" id="dateRangeForm">
       <input
         id='startDate'
         type="date"

@@ -1,7 +1,4 @@
-import Link from 'next/link'
- 
 export default function Layout({
-  modals,
   children,
 }: {
   modals: React.ReactNode
@@ -9,10 +6,7 @@ export default function Layout({
 }) {
   return (
     <div>
-      <div>
-        {modals}
-        {children}
-      </div>
+      {children}
     </div>
   )
 }
