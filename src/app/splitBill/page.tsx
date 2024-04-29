@@ -8,6 +8,7 @@ import Popup from '../components/popupWindow';
 
 const SplitBill = () => {
     const username = localStorage.getItem('username');
+    // const username = "test";
     const my_name = !username? ' ' : username;
 
     const router = useRouter();
@@ -19,25 +20,6 @@ const SplitBill = () => {
     const [inputMethod, setInputMethod] = useState('total');
     const [splitMethod, setSplitMethod] = useState('equal');
     const [totalAmount, setTotalAmount] = useState(0);
-
-    // const [contacts, setContacts] = useState<{
-    //     pinned:{
-    //         individual_contacts: { id: Number, name: string }[],
-    //         group_contacts:{ group_id: number, name: string, members: { id: Number, name: string }[]}[]
-    //     },
-    //     others:{    
-    //         individual: { name: string }[],
-    //         group:{ id: number, name: string, members: { id: Number, name: string }[]}[]
-    //     } 
-    // }>({pinned:{
-    //         individual: [],
-    //         group:[]
-    //     },
-    //     others:{    
-    //         individual: [],
-    //         group:[]
-    //     } 
-    // });
 
     const [contacts, setContacts] = useState<any[]>([])
     const [assignedTotal, setAssignedTotal] = useState(0);
@@ -51,6 +33,7 @@ const SplitBill = () => {
 
     const [selectedUsers, setSelectedUsers] = useState<{ name: string, value: number }[]>([{name: my_name, value: 0}]);
 
+    // switch the visibility of contact list
     function switchShowContacts() {
         if (showContacts) {
             setShowContacts(false);
@@ -74,6 +57,7 @@ const SplitBill = () => {
     };
 
     const addGroup = (type: string, groupId: number) => {
+        // add everyone in the group to participants
         const group = contacts[type as keyof typeof contacts].group_contacts.find((group : any) => group.group_id === groupId);
         if (group) {
             group.members.forEach((member : any) => addUser(member.name));
@@ -104,7 +88,7 @@ const SplitBill = () => {
 
     function calcItemTotal() {
         setTotalAmount(items.reduce((acc, item) => {
-            if (item.name.trim() !== '') {
+            if (item.name.trim() !== '') {  // ignore item with blank field
                 return acc + (item.unitPrice * item.amount);
             }
             return acc;
@@ -165,8 +149,8 @@ const SplitBill = () => {
 
     function validateSplit() {
         calcAssignedTotal();
-        if ((splitMethod === 'amount' && assignedTotal !== totalAmount) ||
-            (splitMethod === 'percentage' && assignedTotal !== 100)) {
+        if ((splitMethod === 'amount' && assignedTotal !== totalAmount) ||  // assigned total should match bill total
+            (splitMethod === 'percentage' && assignedTotal !== 100)) {      // total assigned percantage should be 100
                 console.log("set false")
                 setConfigureState(false);
         } else {
@@ -181,6 +165,7 @@ const SplitBill = () => {
         setSelectedUsers(prevUsers => {
             if (prevUsers.find(user => user.name === userName)) {
                 var parsedValue = event.target.value.trim() !== '' ? parseInt(event.target.value, 10) : 0;
+                // limit max possible assigned percentage to 100%
                 if (parsedValue > 100) {
                     parsedValue = 100;
                 }
@@ -229,10 +214,17 @@ const SplitBill = () => {
         return data;
     };
 
+    function resetPage() {
+        setMasterBillName('');
+        setTotalAmount(0);
+        setItems([{ name: '', unitPrice: 0.0, amount: 0 }]);
+        setSelectedUsers([{name: my_name, value: 0}]);
+    }
+
     const createSplitBill = async () => {
         if (splitMethod === 'equal') {
             setParticipantsValue(parseFloat((totalAmount / selectedUsers.length).toFixed(2)));
-        }        
+        }
         // const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
         const response = await fetch('http://localhost:5005/splitBill', {
           method: 'POST',
@@ -252,6 +244,7 @@ const SplitBill = () => {
         if (response.ok) {
           const res = await response.json();
           console.log('split bill created', res['id']);
+          resetPage();
         } else {
           console.error('Failed to create split bill');
         }
@@ -275,13 +268,14 @@ const SplitBill = () => {
 
         getContacts();
 
-        // Any clean-up code can go here
+        // close socket connection when left
         return () => {
             SocketClient.close();
         };
     }, [])
 
     useEffect(() => {
+        // validate the split when any of the following state changed
         validateSplit();
     }, [items, selectedUsers, totalAmount, inputMethod, splitMethod, assignedTotal])
 
@@ -471,7 +465,6 @@ const SplitBill = () => {
                                 </tbody>
                             </table>
                         ))}
-                        {/* {contacts[category as keyof typeof contacts].individual.length > 0 && ( */}
                             <table>
                                 <tbody>
                                     {contacts[category as keyof typeof contacts].individual_contacts.map((individual : any) => (
@@ -482,7 +475,6 @@ const SplitBill = () => {
                                     ))}
                                 </tbody>
                             </table>
-                        {/* )} */}
                     </div>
                 ))}
             </div>}
