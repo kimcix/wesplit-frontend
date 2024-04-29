@@ -5,10 +5,11 @@ import TopBar from '../components/topBar'
 import { useRouter } from 'next/navigation';
 import SocketClient from '../components/socket';
 import Popup from '../components/popupWindow';
+import Modal from '../components/modal';
 
 const SplitBill = () => {
-    const username = localStorage.getItem('username');
-    // const username = "test";
+    // const username = localStorage.getItem('username');
+    const username = "test";
     const my_name = !username? ' ' : username;
 
     const router = useRouter();
@@ -25,6 +26,15 @@ const SplitBill = () => {
     const [assignedTotal, setAssignedTotal] = useState(0);
     const [showContacts, setShowContacts] = useState(true);
     const [notification, setNotification] = useState<{ title: string, body: string } | null>(null);
+
+    const [showModal, setShowModal] = useState(false);
+
+    const handleShowModal = () => {
+        setShowModal(true);
+        setTimeout(() => {
+          setShowModal(false);
+        }, 3000); // Auto-dismiss after 3 seconds
+      };
 
     // indicate if the split configure is valid 
     const [configureState, setConfigureState] = useState(true);
@@ -244,6 +254,7 @@ const SplitBill = () => {
         if (response.ok) {
           const res = await response.json();
           console.log('split bill created', res['id']);
+          setShowModal(true);
           resetPage();
         } else {
           console.error('Failed to create split bill');
@@ -495,6 +506,12 @@ const SplitBill = () => {
             <button className={`mt-2 border border-gray-300 rounded-md ${(!configureState || totalAmount === 0) ? 'bg-gray-300' : ''}`} disabled={!configureState || totalAmount === 0} onClick={createSplitBill}>Split It!</button>
 
         </div>
+
+        <div>
+            <button onClick={handleShowModal}>Split Bill</button>
+            {showModal && <Modal message="Split successful!" onClose={() => setShowModal(false)} />}
+        </div>
+
         <div className='mb-20'></div>
         <BottomNavBar />
 
