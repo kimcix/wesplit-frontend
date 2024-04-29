@@ -13,15 +13,17 @@ import { analysisAPIPrefix } from '../components/apiPrefix';
 export default function SplitAnalysis() {
   const [data, setData] = useState<any[]>([]); // JSON objects for SubBills from db
   const [activeKey, setActiveKey] = useState<number>(-1);
-  const [dialog, setDialog] = useState<HTMLDialogElement>();
 
-  const [eventSource, setEventSource] = useState<any>(null);
+  const [eventSource, setEventSource] = useState<EventSource | null>(null);
 
   useEffect(() => {
-    // Load dialog-based Modal on every reload
-    setDialog(document.getElementById('tag_editor') as HTMLDialogElement);
-  }, []);
-
+    const dialog: HTMLDialogElement = document.getElementById('tag_editor') as HTMLDialogElement;
+    if (activeKey == -1) {
+      dialog.close();
+    } else {
+      dialog.showModal();
+    }
+  }, [activeKey]);
 
   /** Fetch split bills by date and setup
    * 
@@ -86,21 +88,19 @@ export default function SplitAnalysis() {
 
   const openModal = (key: number) => {
     setActiveKey(key);
-    dialog?.showModal();
   }
 
-  const closeModal = (subdata:object) => {
-    let newData = structuredClone(data);
-    newData[activeKey] = subdata;
-    setData(newData);
-    setActiveKey(-1);
-    dialog?.close();
+  const closeModal = (data:any[]) => {
+    setActiveKey(() => {
+      setData(data);
+      return (-1);
+    });
   }
 
   return (
     <div className='z-10'>
       <dialog id="tag_editor">
-        { (activeKey != -1) && <TagEditor data={data[activeKey]} onPostSubmit={closeModal}/>}
+        { (activeKey != -1) && <TagEditor index={activeKey} data={data} onPostSubmit={closeModal}/>}
       </dialog>
       <TopBar title="Split Analysis" />
       <div className="h-dvh mb-14 pt-14">
@@ -111,7 +111,7 @@ export default function SplitAnalysis() {
           {(data) && (
             data.map((item, key) =>
               <button key={key} onClick={()=>openModal(key)}>
-                <SubBill data={item} />
+                <SubBill subdata={item} />
               </button>
           ))}
         </div>
