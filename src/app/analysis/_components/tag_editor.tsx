@@ -131,7 +131,7 @@ const TagEditor: React.FC<TagEditorProps> = ({ index, onPostSubmit, data }) => {
                     <input
                         type="checkbox"
                         className="absolute left-1/2 -translate-x-1/2 w-full h-full peer appearance-none"
-                        {...(paid) && ({defaultChecked:true})}
+                        {...(paid) && ({defaultChecked:true, disabled:true})}
                         onChange={() => {paidHandler(paid)}}/>
                     <span className="w-16 h-10 flex items-center flex-shrink-0 ml-4 p-1 bg-red-700 rounded-md duration-300 ease-in-out peer-checked:bg-green-400 after:w-8 after:h-8 after:bg-white after:rounded-full after:shadow-md after:duration-300 peer-checked:after:translate-x-6 group-hover:after:translate-x-1"></span>
                 </label>
