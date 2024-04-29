@@ -132,7 +132,7 @@ const SplitBill = () => {
         calcItemTotal();
     }
 
-    function handleAmountChange(index: number, event: ChangeEvent<HTMLInputElement>) {
+    function handleItemAmountChange(index: number, event: ChangeEvent<HTMLInputElement>) {
         const newItems = [...items];
         const parsedValue = event.target.value.trim() !== '' ? parseInt(event.target.value, 10) : 0;
         if (isNaN(parsedValue) && parsedValue !== 0) {
@@ -176,7 +176,7 @@ const SplitBill = () => {
         console.log(assignedTotal, totalAmount, configureState)
     }
 
-    function handlePercentageChange(userName: string, event: ChangeEvent<HTMLInputElement>) {
+    function handleUserPercentageChange(userName: string, event: ChangeEvent<HTMLInputElement>) {
         console.log("percentage changed", userName, event.target.value)
         setSelectedUsers(prevUsers => {
             if (prevUsers.find(user => user.name === userName)) {
@@ -184,6 +184,22 @@ const SplitBill = () => {
                 if (parsedValue > 100) {
                     parsedValue = 100;
                 }
+                return prevUsers.map(user =>
+                    user.name === userName ? { name: userName, value: parsedValue } : user
+                );
+            } 
+            else {
+                return prevUsers;
+            }
+        });
+        console.log(selectedUsers)
+    }
+
+    function handleUserAmountChange(userName: string, event: ChangeEvent<HTMLInputElement>) {
+        console.log("amount changed", userName, event.target.value)
+        setSelectedUsers(prevUsers => {
+            if (prevUsers.find(user => user.name === userName)) {
+                var parsedValue = event.target.value.trim() !== '' ? parseFloat(event.target.value) : 0;
                 return prevUsers.map(user =>
                     user.name === userName ? { name: userName, value: parsedValue } : user
                 );
@@ -343,7 +359,7 @@ const SplitBill = () => {
                                                         type="number"
                                                         placeholder='Amount'
                                                         value={item.amount > 0 ? item.amount.toString() : ''}
-                                                        onChange={(e) => handleAmountChange(index, e)}
+                                                        onChange={(e) => handleItemAmountChange(index, e)}
                                                     />
                                                 </td>
                                                 <td>
@@ -413,7 +429,7 @@ const SplitBill = () => {
                                             max={100}
                                             placeholder='Precentage'
                                             value={selectedUsers.find(usr => usr.name === user.name)?.value || ''}
-                                            onChange={e => handlePercentageChange(user.name, e)}
+                                            onChange={e => handleUserPercentageChange(user.name, e)}
                                         />                                            
                                     }
                                     {splitMethod === "amount" && 
@@ -424,7 +440,7 @@ const SplitBill = () => {
                                             min={0}
                                             placeholder='amount'
                                             value={selectedUsers.find(usr => usr.name === user.name)?.value || ''}
-                                            onChange={e => handlePercentageChange(user.name, e)}
+                                            onChange={e => handleUserAmountChange(user.name, e)}
                                         />                                            
                                     }                                    
                                 </td>                                
