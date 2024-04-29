@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { forwardRef, ForwardedRef, useState, useImperativeHandle } from 'react';
 
 interface DateRangePickerProps {
   onSubmit: any
   // TODO: Fix type
 }
 
-const DateRangePicker: React.FC<DateRangePickerProps> = ({ onSubmit }) => {
+const DateRangePicker: React.FC<DateRangePickerProps> = forwardRef((props: DateRangePickerProps, ref: ForwardedRef<any>) => {
+  const { onSubmit } = props;
+
   /** Formats Date object to HTML input format */
   const formatDate = (date: Date) => {
     const year = date.getFullYear();
@@ -27,6 +29,16 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onSubmit }) => {
     console.log(`Query with ${startDate}, ${endDate}, ${fetchLatest}`)
     onSubmit(startDate, endDate, fetchLatest);
   }
+
+  // Expose a function to the parent component through the ref
+  useImperativeHandle(ref, () => ({
+    reSubmit() {
+      // Decide whether or not to pitch an SSE endpoint
+      const fetchLatest = (currentDate === endDate);
+      console.log(`Query with ${startDate}, ${endDate}, ${fetchLatest}`)
+      onSubmit(startDate, endDate, fetchLatest);
+    }
+  }));
 
   return (
     <form onSubmit={handleSubmit} className="pb-2 flex flex-row flex-wrap justify-center" id="dateRangeForm">
@@ -55,6 +67,10 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onSubmit }) => {
       </button>
     </form>
   );
-};
+});
+
+// Setting the display name
+DateRangePicker.displayName = 'DateRangePicker';
+
 
 export default DateRangePicker;

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import TopBar from '@/app/components/topBar';
 import BottomNavBar from '@/app/components/bottomNavigationBar';
 import DateRangePicker from './_components/daterange';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import SubBill from './_components/subbill';
 import TagEditor from './_components/tag_editor';
 import { analysisAPIPrefix } from '../components/apiPrefix';
@@ -13,6 +13,8 @@ import { analysisAPIPrefix } from '../components/apiPrefix';
 export default function SplitAnalysis() {
   const [data, setData] = useState<any[]>([]); // JSON objects for SubBills from db
   const [activeKey, setActiveKey] = useState<number>(-1);
+
+  const dateRangePickerRef = useRef<any|null>(null);
 
   const [eventSource, setEventSource] = useState<EventSource | null>(null);
 
@@ -25,6 +27,21 @@ export default function SplitAnalysis() {
     }
   }, [activeKey]);
 
+  const closeSSE = async (username: string|null, stream_end_uri: string) => {
+    console.log("Closing SSE");
+    if (eventSource !== null) {
+      eventSource.close();
+    }
+    
+    const response = await fetch(stream_end_uri);
+    if (response.status !== 204) {
+      console.log(`Status ${response.status} occured`)
+    }
+      else {
+      console.log(`Sent unsubscribe for ${username}`);
+    }
+  };
+
   /** Fetch split bills by date and setup
    * 
    * @param startDate 
@@ -32,6 +49,7 @@ export default function SplitAnalysis() {
    * @param fetchLatest
    */
   const dateRangeQuery = async (startDate: string, endDate: string, fetchLatest: boolean) => {
+    console.log(`startDate:${startDate}, endDate:${endDate}, fetchLatest:${fetchLatest}`);
     const USERNAME = localStorage.getItem('username');
     const DATE_QUERY_URI = analysisAPIPrefix + `/date_query?start_date=${startDate}&end_date=${endDate}&user=${USERNAME}`;
     const STREAM_START_URI = analysisAPIPrefix + `/stream_start?user=${USERNAME}`;
@@ -58,29 +76,26 @@ export default function SplitAnalysis() {
       console.log("filtered_result: ", filtered_result);
 
       if (fetchLatest && (eventSource == null)) {
-        console.log("Starting SSE");
+        console.log("Init SSE");
         
         es = new EventSource(STREAM_START_URI);
         es.onopen = () => console.log("Connection opened!");
         es.onerror = (e: any) => console.log(`Error: ${e}`);
-        es.onmessage = () => {
-          const dateRangeForm: any = document.getElementById("dateRangeForm");
-          if (dateRangeForm) {
+        es.onmessage = async (e: any) => {
+          console.log(`Received: ${e.data}`);
+          if (dateRangePickerRef.current && e.data === "reload") {
+            await closeSSE(USERNAME, STREAM_END_URI);
             console.log("Resubmitting date range form:");
-            dateRangeForm.submit();
+            dateRangePickerRef.current.reSubmit();
           }
-        }
+        };
       }
       else if (!fetchLatest && (eventSource != null)) {
-        console.log("Ending SSE");
-        eventSource.close();
-        await fetch(STREAM_END_URI);
+        await closeSSE(USERNAME, STREAM_END_URI);
       }
 
       setData(() => {
-        if (es != null) {
           setEventSource(es);
-        }
         return filtered_result;
       });
     }
@@ -105,7 +120,7 @@ export default function SplitAnalysis() {
       <TopBar title="Split Analysis" />
       <div className="h-dvh mb-14 pt-14">
         <div className='sticky top-14 w-screen bg-yellow-400'>
-          <DateRangePicker onSubmit={dateRangeQuery} />
+          <DateRangePicker onSubmit={dateRangeQuery} ref={dateRangePickerRef} />
         </div>
         <div className="static h-full overflow-y-auto flex flex-col">
           {(data) && (
